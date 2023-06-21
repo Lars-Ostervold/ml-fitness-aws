@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "paths": {
+    "/workout": {
+      "name": "/workout",
+      "lambdaFunction": "generateworkoutAPI",
+      "permissions": {
+        "setting": "open"
+      }
+    }
+  }
+}
