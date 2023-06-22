@@ -2,11 +2,20 @@ import json
 from flask_cors import CORS
 from flask import Flask, jsonify, request
 import awsgi
+import urllib3
+
+#Import statements for workout generator code
+import random
+import math
+import pandas as pd
+import numpy as np
+import os
 
 BASE_ROUTE = "/workout"
+http = urllib3.PoolManager()
 
 app = Flask(__name__)
-cors = CORS(app)
+cors = CORS(app, origins=['http://localhost:3000/'])
 
 @app.route('/')
 def home():
@@ -14,9 +23,9 @@ def home():
 
 @app.route(BASE_ROUTE, methods=['POST']) #This expects JSON data containing the option values from the frontend.
 def handle_api_request():
-    print("RAN GET")
-    data = request.json  # Get the JSON data from the request body
-    print('next line')
+    payload = request.get_json()
+    data = payload.get('data')  # Get the JSON data from the request body
+
     # Extract the values from the data dictionary
     option1_value = data.get('option1')
     option2_value = data.get('option2')
@@ -28,10 +37,12 @@ def handle_api_request():
     output = main(option1_value, option2_value, option3_value, option4_value)
 
     # Return the output as a JSON response
+    #return jsonify(output)
     return json.dumps(output)
 
 #This handler is for awsgi and the lambda functions
 def handler(event, context):
+    print("handler ran")
     return awsgi.response(app, event, context)
 #---------------END FLASK CODE----------------------------------------
 

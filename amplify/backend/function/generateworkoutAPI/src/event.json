@@ -1,1 +1,1 @@
-{ "httpMethod": "GET", "path": "/workout", "queryStringParameters": ""}
+{ "httpMethod": "POST", "path": "/workout", "queryStringParameters": ""}

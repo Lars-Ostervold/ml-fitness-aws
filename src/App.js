@@ -13,27 +13,53 @@ function App() {
   const [selectedOption4, setSelectedOption4] = useState('');
   const [exerciseData, setExerciseData] = useState([]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const data = {
       option1: selectedOption1,
       option2: selectedOption2,
       option3: selectedOption3,
       option4: selectedOption4
     };
-    
+    // const url = 'http://127.0.0.1:5000/workout'; //for local dev
+    const url = 'https://dy9s1q0nb8.execute-api.us-east-1.amazonaws.com/dev'
+    const headers = { 'Content-Type': 'application/json' };
+    const body = JSON.stringify({ data });
 
-    API.post("generateworkoutAPI", "/workout", data)
-      .then((response) => {
-        // Handle the response from the backend
-        console.log(response)
-        setExerciseData(response.data); // Example: Assuming the response is JSON data
+    console.log(data)
+
+    fetch(url, {
+      method: 'POST',
+      headers,
+      body,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data)
+        setExerciseData(data); // Example: Assuming the response is JSON data
         console.log('Here is the excercise data:')
         console.log(exerciseData)
       })
+      .then((sortedList) => {
+        // Handle the sorted list response
+      })
       .catch((error) => {
-        // Handle any error that occurs during the API request
+        // Handle the error
         console.error(error);
       });
+    
+
+    // await API.post("generateworkoutAPI", "/workout", {'Content-Type': 'application/json', 'Accept': 'application/json', data} )
+    //   .then((response) => {
+    //     // Handle the response from the backend
+    //     console.log(response)
+    //     setExerciseData(response.data); // Example: Assuming the response is JSON data
+    //     console.log('Here is the excercise data:')
+    //     console.log(exerciseData)
+    //   })
+    //   .catch((error) => {
+    //     // Handle any error that occurs during the API request
+    //     console.error(error);
+    //   });
   };
   
 
@@ -83,7 +109,7 @@ function App() {
       </button>
     
 
-      {/* <TableComponent exerciseData={exerciseData} /> */}
+      <TableComponent exerciseData={exerciseData} />
 
     </div>
   );
