@@ -15,7 +15,7 @@ BASE_ROUTE = "/workout"
 http = urllib3.PoolManager()
 
 app = Flask(__name__)
-cors = CORS(app, origins=['http://localhost:3000/'])
+cors = CORS(app)
 
 @app.route('/')
 def home():
