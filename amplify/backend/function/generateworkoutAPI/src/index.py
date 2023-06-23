@@ -16,7 +16,7 @@ http = urllib3.PoolManager()
 
 app = Flask(__name__)
 #CORS(app)
-#CORS(app, origins=['https://master.d3g6fmblygsjiz.amplifyapp.com'])
+CORS(app, origins=['https://master.d3g6fmblygsjiz.amplifyapp.com'])
 
 @app.route('/')
 def home():
