@@ -8,7 +8,7 @@ import urllib3
 #Import statements for workout generator code
 import random
 import math
-#import pandas as pd
+import pandas as pd
 #import numpy as np
 import os
 
