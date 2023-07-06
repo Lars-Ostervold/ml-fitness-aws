@@ -15,7 +15,7 @@
       "function": {
         "generateworkoutAPI": {
           "deploymentBucketName": "amplify-mlfitnessapi-dev-100936-deployment",
-          "s3Key": "amplify-builds/generateworkoutAPI-37536d556378374c5542-build.zip"
+          "s3Key": "amplify-builds/generateworkoutAPI-68792b75395878554b72-build.zip"
         }
       },
       "api": {

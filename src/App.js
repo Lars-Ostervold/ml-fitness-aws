@@ -20,8 +20,8 @@ function App() {
       option3: selectedOption3,
       option4: selectedOption4
     };
-    // const url = 'http://127.0.0.1:5000/workout'; //for local dev
-    const url = 'https://dy9s1q0nb8.execute-api.us-east-1.amazonaws.com/dev'
+    const url = 'http://127.0.0.1:5000/workout'; //for local dev
+    // const url = 'https://dy9s1q0nb8.execute-api.us-east-1.amazonaws.com/dev/workout'
     const headers = { 'Content-Type': 'application/json' };
     const body = JSON.stringify({ data });
 

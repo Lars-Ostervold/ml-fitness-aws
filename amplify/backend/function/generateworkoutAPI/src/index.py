@@ -1,3 +1,4 @@
+#Send w/ 'amplify push -y'
 import json
 from flask_cors import CORS
 from flask import Flask, jsonify, request
@@ -7,16 +8,16 @@ import urllib3
 #Import statements for workout generator code
 import random
 import math
-import pandas as pd
-import numpy as np
+#import pandas as pd
+#import numpy as np
 import os
 
 BASE_ROUTE = "/workout"
 http = urllib3.PoolManager()
 
 app = Flask(__name__)
-#CORS(app)
-CORS(app, origins=['https://master.d3g6fmblygsjiz.amplifyapp.com'])
+CORS(app)
+#CORS(app, origins=['https://master.d3g6fmblygsjiz.amplifyapp.com'])
 
 @app.route('/')
 def home():
@@ -117,8 +118,12 @@ def generate_routine(muscle_group):
             exercise_names = df.iloc[:,2]
             #Find the row for each exercise in the selected exercises
             for value in t_list:
-                row = np.where(exercise_names == value)[0]
-                movement_group_list.append(df.iloc[row[0], 1])
+                for i, exercise_name in enumerate(exercise_names):
+                    if exercise_name == value:
+                        movement_group_list.append(df.iloc[i, 1])
+                        break
+                #row = np.where(exercise_names == value)[0]
+                #movement_group_list.append(df.iloc[row[0], 1])
             #Sum the number of times 'Lunge' occurs
             int = movement_group_list.count("Lunge")
             #If 'Lunge' occurs less than 2 times, then exist the while,
