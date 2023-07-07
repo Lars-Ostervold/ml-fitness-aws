@@ -9,19 +9,12 @@ from supabase import create_client, Client
 
 #Import statements for workout generator code
 import random
-import os
 
 BASE_ROUTE = "/workout"
 http = urllib3.PoolManager()
 
 app = Flask(__name__)
 CORS(app)
-
-
-SUPABASE_URL = 'https://nfxcfguxrnsmwfcyuoxf.supabase.co'
-SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5meGNmZ3V4cm5zbXdmY3l1b3hmIiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODg3NTMyOTEsImV4cCI6MjAwNDMyOTI5MX0.-dfJ9jMpr4tNxciR0wiYow0SS0wUy2Ac_SekEKPwt2s'
-
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 @app.route('/')
 def home():
@@ -48,7 +41,13 @@ def handle_api_request():
 
 #This handler is for awsgi and the lambda functions
 def handler(event, context):
-    return awsgi.response(app, event, context)
+    if 'httpMethod' in event:
+        return awsgi.response(app, event, context)
+    else:
+        return {
+            'statusCode': 400,
+            'body': 'Invalid request. Missing httpMethod attribute.'
+        }
 #---------------END FLASK CODE----------------------------------------
 
 
@@ -175,6 +174,12 @@ def generate_rep_scheme(t_list, fitness_goal, user_experience):
     return t_list
 
 def load_exercise_list():
+    #Supabase Client init
+    SUPABASE_URL = 'https://nfxcfguxrnsmwfcyuoxf.supabase.co'
+    SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5meGNmZ3V4cm5zbXdmY3l1b3hmIiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODg3NTMyOTEsImV4cCI6MjAwNDMyOTI5MX0.-dfJ9jMpr4tNxciR0wiYow0SS0wUy2Ac_SekEKPwt2s'
+    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+    
+    #Get data and store in dict 
     exercise_list = []
     response = supabase.table('Exercise_List').select("*").execute()
     exercise_list = response.data
