@@ -4,12 +4,11 @@ from flask_cors import CORS
 from flask import Flask, jsonify, request
 import awsgi
 import urllib3
+from supabase import create_client, Client
+#import supabase
 
 #Import statements for workout generator code
 import random
-import math
-import pandas as pd
-#import numpy as np
 import os
 
 BASE_ROUTE = "/workout"
@@ -17,7 +16,12 @@ http = urllib3.PoolManager()
 
 app = Flask(__name__)
 CORS(app)
-#CORS(app, origins=['https://master.d3g6fmblygsjiz.amplifyapp.com'])
+
+
+SUPABASE_URL = 'https://nfxcfguxrnsmwfcyuoxf.supabase.co'
+SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5meGNmZ3V4cm5zbXdmY3l1b3hmIiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODg3NTMyOTEsImV4cCI6MjAwNDMyOTI5MX0.-dfJ9jMpr4tNxciR0wiYow0SS0wUy2Ac_SekEKPwt2s'
+
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 @app.route('/')
 def home():
@@ -44,7 +48,6 @@ def handle_api_request():
 
 #This handler is for awsgi and the lambda functions
 def handler(event, context):
-    print("handler ran")
     return awsgi.response(app, event, context)
 #---------------END FLASK CODE----------------------------------------
 
@@ -66,10 +69,7 @@ def handler(event, context):
 #Given a muscle group, generate a workout plan for that day
 def generate_routine(muscle_group):
     #Import data for excercises
-    df = pd.read_excel(os.path.join(os.getcwd(),'Exercise_List.xlsx'))
-    #Load first column (muscle group)
-    column = df.iloc[:, 0].values
-    
+    exercise_list = load_exercise_list()
     #Lists to store all exercises that match muscle group, split into compound and accessory movements
     t_list_strength = []
     t_list_acc = []
@@ -79,23 +79,23 @@ def generate_routine(muscle_group):
     if muscle_group == "ARMS":
         t_list_tricep = []
         t_list_bicep = []
-        for index, value in enumerate(column):
-            if "TRICEP" in str(value).upper():
-                t_list_tricep.append(df.iloc[index,2]) 
-            elif "BICEP" in str(value).upper():
-                t_list_bicep.append(df.iloc[index,2])
+        for item in exercise_list:
+            if "TRICEP" in str(item['muscle_group']).upper():
+                t_list_tricep.append(item['variation_group'])
+            elif "BICEP" in str(item['muscle_group']).upper():
+                t_list_bicep.append(item['variation_group'])
         tricep_list = random.sample(t_list_tricep,3)
         bicep_list = random.sample(t_list_bicep, 3)
         return [item for pair in zip(tricep_list, bicep_list) for item in pair]
 
     #Loop through the muscle group column and store exercises (2nd column)
     #that match the muscle_group key
-    for index, value in enumerate(column):
-        if muscle_group in str(value).upper():
-            if "STRENGTH" in str(df.iloc[index,9]).upper():
-                t_list_strength.append(df.iloc[index,2])
+    for item in exercise_list:
+        if muscle_group in str(item['muscle_group']).upper():
+            if "STRENGTH" in str(item['type']).upper():
+                t_list_strength.append(item['variation_group'])
             else:
-                t_list_acc.append(df.iloc[index,2])
+                t_list_acc.append(item['variation_group'])
     
     #Pick random exercises
     str_list = random.sample(t_list_strength, 3) #Choose 3 random compound movements
@@ -103,37 +103,39 @@ def generate_routine(muscle_group):
 
     #Sanity check to prevent too many lunge variations
     if muscle_group == "LEGS":
-        #Load the exercise types from the Excel sheet
-        exercise_types = df.iloc[:, 1].values
+        # #Load the exercise types from the Excel sheet
+        # #exercise_types = [item[2] for item in exercise_list]
         
-        #Add the strength and accessory lists together
-        t_list = str_list + acc_list
+        # #Add the strength and accessory lists together
+        # t_list = str_list + acc_list
         
-        #Run a while loop until there is <= 1 lunge variation
-        more_than_one_lunge_BOOL = True
-        while more_than_one_lunge_BOOL:
-            #Create new list to store the movement groups
-            movement_group_list = []
-            #Store all names of exercises from Excel
-            exercise_names = df.iloc[:,2]
-            #Find the row for each exercise in the selected exercises
-            for value in t_list:
-                for i, exercise_name in enumerate(exercise_names):
-                    if exercise_name == value:
-                        movement_group_list.append(df.iloc[i, 1])
-                        break
-                #row = np.where(exercise_names == value)[0]
-                #movement_group_list.append(df.iloc[row[0], 1])
-            #Sum the number of times 'Lunge' occurs
-            int = movement_group_list.count("Lunge")
-            #If 'Lunge' occurs less than 2 times, then exist the while,
-            #otherwise, reroll the exercises.
-            if int < 2:
-                more_than_one_lunge_BOOL = False
-            else:
-                str_list = random.sample(t_list_strength, 3) #Choose 3 random compound movements
-                acc_list = random.sample(t_list_acc, 2) #Choose 2 random accessory movements
-                t_list = str_list + acc_list
+        # #Run a while loop until there is <= 1 lunge variation
+        # more_than_one_lunge_BOOL = True
+        # while more_than_one_lunge_BOOL:
+        #     #Create new list to store the movement groups
+        #     movement_group_list = []
+        #     #Store all names of exercises from Excel
+        #     exercise_names = [item['variation_group'] for item in exercise_list]
+        #     #Find the row for each exercise in the selected exercises
+        #     for value in t_list:
+        #         for i, exercise_name in enumerate(exercise_names):
+        #             if exercise_name == value:
+        #                 movement_group_list.append(exercise_list[i, 1])
+        #                 break
+        #         #row = np.where(exercise_names == value)[0]
+        #         #movement_group_list.append(exercise_list.iloc[row[0], 1])
+        #     #Sum the number of times 'Lunge' occurs
+        #     int = movement_group_list.count("Lunge")
+        #     #If 'Lunge' occurs less than 2 times, then exist the while,
+        #     #otherwise, reroll the exercises.
+        #     if int < 2:
+        #         more_than_one_lunge_BOOL = False
+        #     else:
+        #         str_list = random.sample(t_list_strength, 3) #Choose 3 random compound movements
+        #         acc_list = random.sample(t_list_acc, 2) #Choose 2 random accessory movements
+        #         t_list = str_list + acc_list
+        str_list = random.sample(t_list_strength, 3) #Choose 3 random compound movements
+        acc_list = random.sample(t_list_acc, 2) #Choose 2 random accessory movements
      
     #return the compound and accessory movements lists combined
     return str_list + acc_list
@@ -171,6 +173,12 @@ def generate_rep_scheme(t_list, fitness_goal, user_experience):
         suffix = f" {sets[i]}x{reps[i]}"
         t_list[i] += suffix
     return t_list
+
+def load_exercise_list():
+    exercise_list = []
+    response = supabase.table('Exercise_List').select("*").execute()
+    exercise_list = response.data
+    return exercise_list
 
 def main(workout_days_per_week, time_per_workout, fitness_goal, user_experience):
     #This line is temporary to get working version
