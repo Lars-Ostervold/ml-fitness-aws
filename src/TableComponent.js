@@ -1,31 +1,35 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 const TableComponent = ({ exerciseData }) => {
+  // console.log('Table component - Type is exerciseData type:', typeof exerciseData)
+  // console.log('Table component - This is exerciseData printout:')
+  // console.log(exerciseData)
+  // if (!Array.isArray(exerciseData)) {
+  //   // Display an error message or return null if exerciseData is not an array
+  //   return <p>Error: Invalid exercise data</p>;
+  // }
 
   return (
     <div>
-      <table>
-        <thead>
-          <tr>
-            <th>Column 1</th>
-            <th>Column 2</th>
-            <th>Column 3</th>
-            {/* Add more column headings as needed */}
-          </tr>
-        </thead>
-        <tbody>
-          {exerciseData.map((row, index) => (
-            <tr key={index}>
-              <td>{row[0]}</td>
-              <td>{row[1]}</td>
-              <td>{row[2]}</td>
-              {/* Render more columns based on the row array */}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {exerciseData.map(({ id, exercises }) => (
+        <div key={id}>
+          <h3>Group {id}</h3>
+          <ul>
+            {exercises.map((exercise, index) => (
+              <li key={index}>{exercise}</li>
+            ))}
+          </ul>
+        </div>
+      ))}
     </div>
   );
 };
 
+// Helper function to get the day of the week based on index
+const getDayOfWeek = (index) => {
+  const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+  return daysOfWeek[index] || '';
+};
+
 export default TableComponent;
+

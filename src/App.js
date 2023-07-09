@@ -4,6 +4,7 @@ import { API } from 'aws-amplify';
 import React, { useEffect } from 'react';
 import { useState } from 'react';
 import TableComponent from './TableComponent';
+// import { Lambda } from 'aws-sdk';
 
 
 function App() {
@@ -13,42 +14,93 @@ function App() {
   const [selectedOption4, setSelectedOption4] = useState('');
   const [exerciseData, setExerciseData] = useState([]);
 
+  // const handleSubmit = async () => {
+  //   const lambda = new Lambda({ region: 'us-east-1' }); // Update the region as per your Lambda function's region
+  
+  //   const payload = {
+  //     option1: selectedOption1,
+  //     option2: selectedOption2,
+  //     option3: selectedOption3,
+  //     option4: selectedOption4
+  //   };
+  
+  //   const params = {
+  //     FunctionName: 'YourLambdaFunctionName',
+  //     Payload: JSON.stringify(payload)
+  //   };
+  
+  //   try {
+  //     const response = await lambda.invoke(params).promise();
+  //     const data = JSON.parse(response.Payload);
+  //     console.log(data);
+  //     setExerciseData(data); // Example: Assuming the response is JSON data
+  //     console.log('Here is the exercise data:');
+  //     console.log(exerciseData);
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
+
+
   const handleSubmit = async () => {
-    const data = {
+    const payload = {
       option1: selectedOption1,
       option2: selectedOption2,
       option3: selectedOption3,
       option4: selectedOption4
     };
-    // const url = 'http://127.0.0.1:5000/workout'; //for local dev
-    const url = 'https://dy9s1q0nb8.execute-api.us-east-1.amazonaws.com/dev/workout'
-    const headers = { 
-      'Content-Type': 'application/json'
-  };
-    const body = JSON.stringify({ data });
-
-    console.log(data)
-
-    fetch(url, {
-      method: 'POST',
-      headers,
-      body,
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data)
-        setExerciseData(data); // Example: Assuming the response is JSON data
-        console.log('Here is the excercise data:')
-        console.log(exerciseData)
-      })
-      .then((sortedList) => {
-        // Handle the sorted list response
-      })
-      .catch((error) => {
-        // Handle the error
-        console.error(error);
-      });
     
+    // const url = 'https://dy9s1q0nb8.execute-api.us-east-1.amazonaws.com/dev/workout'
+    // const headers = {'Content-Type': 'application/json'};
+    // const body = JSON.stringify({ payload });
+
+    try {
+      const response = await API.post('generateworkoutAPI', '/workout', {
+        body: payload
+      });
+      // console.log('This is type of response:', typeof response)
+      // console.log(response)
+      // console.log('This is response.body:')
+      // console.log(response.body)
+      // console.log('this is type of body:', typeof response.body)
+
+
+      const data = JSON.parse(response.body);
+      console.log(data)
+
+      const exerciseArray = Object.entries(data).map(([key, value]) => ({
+        id: key,
+        exercises: value,
+      }));
+      console.log(exerciseArray);
+
+      setExerciseData(exerciseArray);
+      console.log(exerciseData)
+    } catch (error) {
+      console.error(error);
+    };
+
+    // For calling the flask app directly
+    //const url = 'http://127.0.0.1:5000/workout'; //for local dev
+    // fetch(url, {
+    //   method: 'POST',
+    //   headers: headers,
+    //   body: body
+    // })
+    //   .then((response) => response.json())
+    //   .then((data) => {
+    //     console.log(data)
+    //     setExerciseData(data); // Example: Assuming the response is JSON data
+    //     console.log('Here is the excercise data:')
+    //     console.log(exerciseData)
+    //   })
+    //   .then((sortedList) => {
+    //     // Handle the sorted list response
+    //   })
+    //   .catch((error) => {
+    //     // Handle the error
+    //     console.error(error);
+    //   });
 
     // await API.post("generateworkoutAPI", "/workout", {'Content-Type': 'application/json', 'Accept': 'application/json', data} )
     //   .then((response) => {
