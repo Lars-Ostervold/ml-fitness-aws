@@ -135,14 +135,21 @@ def get_split_selection(workout_days_per_week, user_experience):
         #for each
         for i in range(workout_days_per_week):
             split_list = split_list.append("FULL")
-    
-    #Days 1-5 for intermediate are the same as advanced, so no need to check
-    if workout_days_per_week == 1:
-        split_list = 8
-    if user_experience == 2: #Intermediate 
-        if workout_days_per_week == 1:
-            print(J)
 
+    #Intermediate and Advanced splits
+    #FIXME - Break PUSH and PULL into muscle components
+    if workout_days_per_week == 2:
+        split_list = ["CHEST/BACK", "LEGS/SHOULDERS"]
+    elif workout_days_per_week == 3:
+        split_list = ["PUSH", "PULL", "LEGS"]
+    elif workout_days_per_week == 4:
+        split_list = ["CHEST/TRICEP", "BACK/BICEP", "QUAD/HAMSTRING", "SHOULDERS"]
+    elif workout_days_per_week == 5:
+        split_list = ["CHEST/TRICEP", "BACK/BICEP", "QUAD/HAMSTRING", "SHOULDERS", "TRICEP/BICEP"]
+    elif workout_days_per_week == 6:
+        split_list = ["PUSH", "PULL", "LEGS", "PUSH", "PULL", "LEGS"]
+    elif workout_days_per_week == 7:
+        split_list = ["PUSH", "PULL", "LEGS", "PUSH", "PULL", "LEGS", "RECOVER"]
 
     return split_list
 
@@ -159,21 +166,7 @@ def main(workout_days_per_week, time_per_workout, fitness_goal, user_experience)
     
     master_workout_list = []
 
-    #For beginners, give no customization. Intermediate give some, advanced give any split selector.
-    #Beginner logic:
-        #Full body every day, adjust based on number of days
-    #Intermediate logic:
-        #1 day - Full body
-        #2 days - Chest/back, legs/shoulder
-        #3 days - Push, pull, legs
-        #4 days - Push, pull, legs, arms
-        #5 days - chest, back, shoulders, legs, arms
-    #Advanced
-        #same as intermediate for 1-5
-        #6 - push, pull, legs x2
-        #7 - add active recovery
-
-    split_list = ["LEGS", "SHOULDERS", "BACK", "CHEST", "ARMS"]
+    split_list = get_split_selection(workout_days_per_week, user_experience)
 
     #Call exercise data here so we only access Supabase once.
     all_exercise_data = load_exercise_list()
