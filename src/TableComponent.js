@@ -1,20 +1,17 @@
 import React from 'react';
+import { Typography } from '@mui/material';
 
 const TableComponent = ({ exerciseData }) => {
-  // console.log('Table component - Type is exerciseData type:', typeof exerciseData)
-  // console.log('Table component - This is exerciseData printout:')
-  // console.log(exerciseData)
-  // if (!Array.isArray(exerciseData)) {
-  //   // Display an error message or return null if exerciseData is not an array
-  //   return <p>Error: Invalid exercise data</p>;
-  // }
-
+  if (typeof exerciseData === 'string') { //Check if String, which means backend failed
+    return <Typography variant="h3">{exerciseData}</Typography>;
+  }
+  
   return (
     <div>
       {exerciseData.map(({ id, exercises }) => (
         <div key={id}>
-          <h3>Group {id}</h3>
-          <ul>
+          <Typography variant="h3">{getDayOfWeek(id)}</Typography>
+          <ul style={{ listStyle: 'none'}}>
             {exercises.map((exercise, index) => (
               <li key={index}>{exercise}</li>
             ))}
@@ -27,7 +24,7 @@ const TableComponent = ({ exerciseData }) => {
 
 // Helper function to get the day of the week based on index
 const getDayOfWeek = (index) => {
-  const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+  const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   return daysOfWeek[index] || '';
 };
 
