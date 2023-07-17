@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "18848042feb5b47396ae549cd8d8f5c27485f6e48407d9a8690073c2f01b3843"
+            "sha256": "df7b0139ad2e8f0ddd5a4d0d1073fa5cd673aadfa8ebfa5b55d9fbf64bdd9c49"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -23,14 +23,6 @@
             ],
             "markers": "python_version >= '3.7'",
             "version": "==3.7.1"
-        },
-        "aws-wsgi": {
-            "hashes": [
-                "sha256:37e16b6a211f251d9f72ab85018c4127a59dc0fc81263c19f312a6a8333f9908",
-                "sha256:eb0b00970e80d96b52c0806ceae2ff98ab96c90f67651765755c5236f9e6e50d"
-            ],
-            "index": "pypi",
-            "version": "==0.2.7"
         },
         "bleach": {
             "hashes": [
