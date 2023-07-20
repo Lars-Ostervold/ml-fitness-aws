@@ -91,7 +91,7 @@ function App() {
       .then((data) => { 
         const status_check = data.statusCode //Get status code from backend
         const data2 = JSON.parse(data.body)
-
+        
         if (status_check === 400) {//400 error is unselected options for now
           setExerciseData(data.body.replace(/"/g, ''));//Returns error w/o double quotes
         } else{ 

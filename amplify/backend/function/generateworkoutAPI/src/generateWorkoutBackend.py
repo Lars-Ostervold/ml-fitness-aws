@@ -1,5 +1,5 @@
 import random
-from supabase import create_client, Client
+from exercise_lists import *
 
 def get_split_selection(workout_days_per_week, user_experience):
     split_dict = {}
@@ -8,37 +8,40 @@ def get_split_selection(workout_days_per_week, user_experience):
         #for each
         for i in range(1, workout_days_per_week + 1):
             split_dict[i] = "FULL"
+        return split_dict
 
     #Intermediate and Advanced splits
     #PUSH = CHEST/TRICEP/SHOULDERS
-    #PULL = BACK/BICEP/LBACK/TRAPS
+    #PULL = BACK/BICEP/LOWER BACK/TRAPS
+    print(workout_days_per_week)
     if workout_days_per_week == 2:  # CHEST+BACK, LEGS+SHOULDERS
         split_dict = {1: ["CHEST", "BACK"], 2: ["LEGS", "SHOULDERS"]}
     elif workout_days_per_week == 3:  # PUSH, PULL, LEGS
-        split_dict = {1: ["CHEST", "TRICEP", "SHOULDERS"], 2: ["BACK", "BICEP", "LBACK", "TRAPS"], 3: ["QUAD", "HAMSTRING", "CALVES"]}
+        split_dict = {1: ["CHEST", "TRICEP", "SHOULDERS"], 2: ["BACK", "BICEP", "LOWER BACK", "TRAPS"], 3: ["QUAD", "HAMSTRING", "CALVES"]}
     elif workout_days_per_week == 4:  # CHEST, BACK, LEGS, SHOULDERS
         split_dict = {1: ["CHEST", "TRICEP"], 2: ["BACK", "BICEP"], 3: ["QUAD", "HAMSTRING", "CALVES"], 4: ["SHOULDERS", "TRICEP"]}
     elif workout_days_per_week == 5:  # CHEST, BACK, LEGS, SHOULDERS, ARMS
         split_dict = {1: ["CHEST", "TRICEP"], 2: ["BACK", "BICEP"], 3: ["QUAD", "HAMSTRING", "CALVES"], 4: ["SHOULDERS", "TRICEP"], 5: ["TRICEP", "BICEP", "FOREARM"]}
     elif workout_days_per_week == 6:  # PUSH, PULL, LEGS, PUSH, PULL, LEGS
-        split_dict = {1: ["CHEST", "TRICEP", "SHOULDERS"], 2: ["BACK", "BICEP", "LBACK", "TRAPS"], 3: ["QUAD", "HAMSTRING", "CALVES"], 4: ["CHEST", "TRICEP", "SHOULDERS"], 5: ["BACK", "BICEP", "LBACK", "TRAPS"], 6: ["QUAD", "HAMSTRING", "CALVES"]}
+        split_dict = {1: ["CHEST", "TRICEP", "SHOULDERS"], 2: ["BACK", "BICEP", "LOWER BACK", "TRAPS"], 3: ["QUAD", "HAMSTRING", "CALVES"], 4: ["CHEST", "TRICEP", "SHOULDERS"], 5: ["BACK", "BICEP", "LOWER BACK", "TRAPS"], 6: ["QUAD", "HAMSTRING", "CALVES"]}
     elif workout_days_per_week == 7:  # PUSH, PULL, LEGS, PUSH, PULL, LEGS, RECOVER
-        split_dict = {1: ["CHEST", "TRICEP", "SHOULDERS"], 2: ["BACK", "BICEP", "LBACK", "TRAPS"], 3: ["QUAD", "HAMSTRING", "CALVES"], 4: ["CHEST", "TRICEP", "SHOULDERS"], 5: ["BACK", "BICEP", "LBACK", "TRAPS"], 6: ["QUAD", "HAMSTRING", "CALVES"], 7: ["RECOVER"]}
-
+        split_dict = {1: ["CHEST", "TRICEP", "SHOULDERS"], 2: ["BACK", "BICEP", "LOWER BACK", "TRAPS"], 3: ["QUAD", "HAMSTRING", "CALVES"], 4: ["CHEST", "TRICEP", "SHOULDERS"], 5: ["BACK", "BICEP", "LOWER BACK", "TRAPS"], 6: ["QUAD", "HAMSTRING", "CALVES"], 7: ["RECOVER"]}
+    else:
+        print("ERROR: COULD NOT GENERATE SPLIT in get_split_selection()")
     return split_dict
 
 #Given a split for a day, generate a 'skeleton' workout plan. The skeleton will say what muscle group, whether it's
 #a compound or accessory movement, and how many sets/reps to do.
 def generate_workout_skeleton(daily_split, fitness_goal, user_experience, time_per_workout):
-    
+    #FIXME: user_experience should be used to limit the possible exercises
     daily_workout_skeleton = {}
 
     #Find the number of sets assuming 2.5 minutes per set
-    number_of_sets = time_per_workout // 2.5
+    number_of_sets = int(time_per_workout // 2.5)
 
     #Given the number_of_sets, we need to figure out how many exercises to do for the day
     #FIXME - This is a hacky way to do this, can improve logic.
-    number_of_exercises = number_of_sets // 4
+    number_of_exercises = int(number_of_sets // 4)
     remainder = number_of_sets % 4
     if remainder > 0:
         number_of_exercises += 1
@@ -105,114 +108,37 @@ def generate_workout_skeleton(daily_split, fitness_goal, user_experience, time_p
 
     return daily_workout_skeleton
 
-#Given a muscle group, generate a workout plan for that day
-def generate_routine(muscle_group, all_exercise_data):
-    #FIXME - Don't include accessory lifts on times <30?
-    #Lists to store all exercises that match muscle group, split into compound and accessory movements
-    t_list_strength = []
-    t_list_acc = []
-
-    #muscle_group is a list of muscle groups, passed from the split_dict function.
-    #for each muscle in muscle group, we need to loop through the exercise data and store
-    #matches in the appropriate list. From there, we have to select exercises, but we have to make sure
-    #that we find at least one movement for each muscle group.
-    #FIXME - Need to add a check to make sure that the same exercise isn't selected twice.
-    for muscle in muscle_group:
-        for item in all_exercise_data:
-            if muscle in str(item['muscle_group']).upper():
-                if "STRENGTH" in str(item['type']).upper():
-                    t_list_strength.append(item['variation_group'])
-                else:
-                    t_list_acc.append(item['variation_group'])
-
-    #Need to figure out how many exercises to include. Let's use the logic that we 
-    #want include new exercises if the numbers of sets / exercises is > 4. So we go total
-    #divided by 4, and then round up to the nearest integer.
-
-
-
-
-    #If the muscle group is arms, need to search for BICEP and TRICEP and return before
-    #the next for loop is reached. See next loop for comments
-    if muscle_group == "ARMS":
-        t_list_tricep = []
-        t_list_bicep = []
-        for item in all_exercise_data:
-            if "TRICEP" in str(item['muscle_group']).upper():
-                t_list_tricep.append(item['variation_group'])
-            elif "BICEP" in str(item['muscle_group']).upper():
-                t_list_bicep.append(item['variation_group'])
-        tricep_list = random.sample(t_list_tricep,3)
-        bicep_list = random.sample(t_list_bicep, 3)
-        return [item for pair in zip(tricep_list, bicep_list) for item in pair]
-
-    #Loop through the muscle group column and store exercises (2nd column)
-    #that match the muscle_group key
-    for item in all_exercise_data:
-        if muscle_group in str(item['muscle_group']).upper():
-            if "STRENGTH" in str(item['type']).upper():
-                t_list_strength.append(item['variation_group'])
-            else:
-                t_list_acc.append(item['variation_group'])
+#Given a workout skeleton, select exercises from the exercise data.
+#Input is a dictionary with the following format: {key: [compound or accessory, muscle group, number of sets, number of reps]}
+#This function will return a list of exercises that match the muscle group and compound or accessory movement, along with the number of sets and reps.
+def select_exercises(daily_workout_skeleton):
     
-    #Pick random exercises
-    str_list = random.sample(t_list_strength, 3) #Choose 3 random compound movements
-    acc_list = random.sample(t_list_acc, 2) #Choose 2 random accessory movements
+    complete_daily_workout = []
+    possible_exercises = {}
 
-    #Sanity check to prevent too many lunge variations
-    #FIXME - The code to avoid lots of lunges doesn't work after switch to supabase.
-    if muscle_group == "LEGS":
-        # #Load the exercise types from the Excel sheet
-        # #exercise_types = [item[2] for item in all_exercise_data]
-        
-        # #Add the strength and accessory lists together
-        # t_list = str_list + acc_list
-        
-        # #Run a while loop until there is <= 1 lunge variation
-        # more_than_one_lunge_BOOL = True
-        # while more_than_one_lunge_BOOL:
-        #     #Create new list to store the movement groups
-        #     movement_group_list = []
-        #     #Store all names of exercises from Excel
-        #     exercise_names = [item['variation_group'] for item in all_exercise_data]
-        #     #Find the row for each exercise in the selected exercises
-        #     for value in t_list:
-        #         for i, exercise_name in enumerate(exercise_names):
-        #             if exercise_name == value:
-        #                 movement_group_list.append(all_exercise_data[i, 1])
-        #                 break
-        #         #row = np.where(exercise_names == value)[0]
-        #         #movement_group_list.append(all_exercise_data.iloc[row[0], 1])
-        #     #Sum the number of times 'Lunge' occurs
-        #     int = movement_group_list.count("Lunge")
-        #     #If 'Lunge' occurs less than 2 times, then exist the while,
-        #     #otherwise, reroll the exercises.
-        #     if int < 2:
-        #         more_than_one_lunge_BOOL = False
-        #     else:
-        #         str_list = random.sample(t_list_strength, 3) #Choose 3 random compound movements
-        #         acc_list = random.sample(t_list_acc, 2) #Choose 2 random accessory movements
-        #         t_list = str_list + acc_list
-        str_list = random.sample(t_list_strength, 3) #Choose 3 random compound movements
-        acc_list = random.sample(t_list_acc, 2) #Choose 2 random accessory movements
-     
-    #return the compound and accessory movements lists combined
-    return str_list + acc_list
+    #Loop through the daily_workout_skeleton, find matching workouts in the exercise_db, then pick a random matching exercise
+    for i in range(len(daily_workout_skeleton)):
+        possible_exercises[i] = []
+        for exercise in exercise_db: #exercise is a dictionary
+            #if index 0 of a key in daily_workout_skeleton mathces value for key 'type' in exercise_db, and index 1 of a 
+            #key in daily_workout_skeleton is in value for key 'muscle_group' in exercise_db, then append
+            #the 'variation_group' value to possible_exercises. The comparison should be case insensitive.
+            if ( #Code below avoids error with NULL values
+                daily_workout_skeleton[i][0].lower() in (exercise['type'].lower() if exercise['type'] else '') and
+                daily_workout_skeleton[i][1].lower() in (exercise['muscle_group'].lower() if exercise['muscle_group'] else '')
+            ):
+                possible_exercises[i].append(exercise['variation_group'])
+
+
+    #Now we have a list of possible exercises for each exercise in the daily_workout_skeleton. We need to randomly choose one.
+    for i in range(len(daily_workout_skeleton)):
+        complete_daily_workout.append(random.choice(possible_exercises[i]))
+        #now add the sets and reps to the list
+        complete_daily_workout[i] = [complete_daily_workout[i], daily_workout_skeleton[i][2], daily_workout_skeleton[i][3]]
+
+
+    return complete_daily_workout
     
-
-def load_exercise_list():
-    #Supabase Client init
-    SUPABASE_URL = 'https://nfxcfguxrnsmwfcyuoxf.supabase.co'
-    SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5meGNmZ3V4cm5zbXdmY3l1b3hmIiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODg3NTMyOTEsImV4cCI6MjAwNDMyOTI5MX0.-dfJ9jMpr4tNxciR0wiYow0SS0wUy2Ac_SekEKPwt2s'
-    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-    
-    exercise_list = []
-
-    # #Get data from Supabase and store in dict 
-    response = supabase.table('Exercise_List').select("*").execute()
-    exercise_list = response.data
-
-    return exercise_list
 
 def main(workout_days_per_week, time_per_workout, fitness_goal, user_experience):
     #FIXME
@@ -227,18 +153,48 @@ def main(workout_days_per_week, time_per_workout, fitness_goal, user_experience)
     
     master_workout_list = []
 
-    split_dict = get_split_selection(workout_days_per_week, user_experience)
-
-    #Call exercise data here so we only access Supabase once.
-    all_exercise_data = load_exercise_list()
+    split_dict = get_split_selection(int(workout_days_per_week), int(user_experience))
+    #This will populate the global exercise lists
+    #FIXME: Can pass split to only populate some of the lists
+    print(split_dict)
 
     #First, generate a skeleton workout based on the split. Then assign sets and reps. Then fill in the workouts.
     for i in split_dict:
         #generate_workout_skeleton will return a dictionary where the key is the day of the workout, the first value is COMPOUND or ACCESSORY, 
         #the second value is the muscle group, and the 3rd value is sets, 4th is reps.
-        daily_workout = generate_workout_skeleton(split_dict[i], int(fitness_goal), int(user_experience), int(time_per_workout))
-
-        daily_workout = generate_routine(daily_workout, all_exercise_data)
+        daily_workout_skeleton = generate_workout_skeleton(split_dict[i], int(fitness_goal), int(user_experience), int(time_per_workout))
+        print(f"SKELE: {daily_workout_skeleton}")
+        daily_workout = select_exercises(daily_workout_skeleton)
+        print(f"DAILY WORKOUT: {daily_workout}")
         master_workout_list.append(daily_workout)
     
+    print(master_workout_list)
     return master_workout_list
+
+#Generate tests for the functions
+def test_get_split_selection():
+    print("TESTING get_split_selection()")
+    print("TEST 1: 3 days per week, beginner")
+    split_dict = get_split_selection(3, 1)
+    print(split_dict)
+    print("TEST 2: 4 days per week, intermediate")
+    split_dict = get_split_selection(4, 2)
+    print(split_dict)
+    print("TEST 3: 5 days per week, advanced")
+    split_dict = get_split_selection(5, 3)
+    print(split_dict)
+    print("TEST 4: 6 days per week, advanced")
+    split_dict = get_split_selection(6, 3)
+    print(split_dict)
+    print("TEST 5: 7 days per week, advanced")
+    split_dict = get_split_selection(7, 3)
+    print(split_dict)
+def test_select_exercises():
+    print("TESTING select_exercises()")
+    daily_workout_skeleton = {0: ['COMPOUND', 'CHEST', 3, 5], 1: ['COMPOUND', 'BACK', 3, 5], 2: ['ACCESSORY', 'TRICEP', 3, 5], 3: ['ACCESSORY', 'BICEP', 3, 5]}
+    print(f"DAILY WORKOUT SKELETON: {daily_workout_skeleton}")
+    daily_workout = select_exercises(daily_workout_skeleton)
+    print(f"DAILY WORKOUT: {daily_workout}")
+
+# test_get_split_selection()
+test_select_exercises()
