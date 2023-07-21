@@ -28,15 +28,16 @@ def handle_api_request(data):
             "body": json.dumps("Please select a value for all options.")
         }
     
-    # Pass the option values from front as arguments and get the output
+    # Pass the option values as arguments and get the output
+    #Return is a dictionary for each workout day (numeric, zero index), then list of each workout for the day
+    #Each workout is another list cotaining 3 values - name of the exercise, # of sets, # of reps
+    #E.g., {0: [['exercisName#1', set, rep], ['exerciseName#2', set, rep],...}
     output = main(workout_days_per_week, time_per_workout, fitness_goal, user_experience)
- 
-    #Convert list into dictionary
-    dict_output = {i: lst for i, lst in enumerate(output)}
+    
     return {
     "statusCode": 200,
     "headers": {
         "Content-Type": "application/json"
     },
-    "body": json.dumps(dict_output)
+    "body": json.dumps(output)
     } 

@@ -6,14 +6,16 @@ def get_split_selection(workout_days_per_week, user_experience):
     if user_experience == 1: #Beginner
         #Make a loop that iterates #of workout days and adds a 'FULL'
         #for each
+        #FIXME: 'FULL' currently has no options to pull workouts. Maybe replace with:
+        #FIXME: chest, back, legs. But they should all be compound movements.
         for i in range(1, workout_days_per_week + 1):
             split_dict[i] = "FULL"
         return split_dict
 
-    #Intermediate and Advanced splits
+    #Intermediate and Advanced splits (intermediate doesn't have option to pick >5 days)
     #PUSH = CHEST/TRICEP/SHOULDERS
     #PULL = BACK/BICEP/LOWER BACK/TRAPS
-    print(workout_days_per_week)
+    #FIXME: Currently no FOREARM workouts
     if workout_days_per_week == 2:  # CHEST+BACK, LEGS+SHOULDERS
         split_dict = {1: ["CHEST", "BACK"], 2: ["LEGS", "SHOULDERS"]}
     elif workout_days_per_week == 3:  # PUSH, PULL, LEGS
@@ -33,7 +35,7 @@ def get_split_selection(workout_days_per_week, user_experience):
 #Given a split for a day, generate a 'skeleton' workout plan. The skeleton will say what muscle group, whether it's
 #a compound or accessory movement, and how many sets/reps to do.
 def generate_workout_skeleton(daily_split, fitness_goal, user_experience, time_per_workout):
-    #FIXME: user_experience should be used to limit the possible exercises
+    #FIXME: If beginner, change to all compounds movements
     daily_workout_skeleton = {}
 
     #Find the number of sets assuming 2.5 minutes per set
@@ -70,6 +72,8 @@ def generate_workout_skeleton(daily_split, fitness_goal, user_experience, time_p
 
     #Now we need to randomly choose muscle groups from daily_split, but we don't want to repeat muscle groups until all muscle groups have been used
     #But we need repeats if there are more exercises than muscle groups, so we need to check for that.
+    #FIXME: Need logic to make sure at least 1 exercises of every muscle group in this.
+    #FIXME: Maybe can pop the first round, then random selection
     if number_of_exercises > len(daily_split):
         #We need repeats, so we can just randomly choose from daily_split
         for i in range(number_of_exercises):
@@ -112,7 +116,8 @@ def generate_workout_skeleton(daily_split, fitness_goal, user_experience, time_p
 #Input is a dictionary with the following format: {key: [compound or accessory, muscle group, number of sets, number of reps]}
 #This function will return a list of exercises that match the muscle group and compound or accessory movement, along with the number of sets and reps.
 def select_exercises(daily_workout_skeleton):
-    
+    #FIXME: User experience should be used to filter workouts.
+    #FIXME: This needs both a min and max level (advanced users should NEVER be doing kneeling push-ups)
     complete_daily_workout = []
     possible_exercises = {}
 
@@ -140,12 +145,7 @@ def select_exercises(daily_workout_skeleton):
     return complete_daily_workout
     
 
-def main(workout_days_per_week, time_per_workout, fitness_goal, user_experience):
-    #FIXME
-    #Based on the split, we should trigger possible muscle groups to include in the lift
-        #We can add some optimization to make sure we don't load up 7 hamstring lifts later
-    #Then, with the same logic, it would be easy to let the user select the muscle groups instead.
-    #This allows the advanced users to customize.
+def main(workout_days_per_week, time_per_workout, fitness_goal, user_experience):   
     
     #List of muscle groups:
         #Abs, back, biceps, chest, glutes, hamstrings, quads, shoulders, triceps, lower back
@@ -154,23 +154,24 @@ def main(workout_days_per_week, time_per_workout, fitness_goal, user_experience)
     master_workout_list = []
 
     split_dict = get_split_selection(int(workout_days_per_week), int(user_experience))
-    #This will populate the global exercise lists
-    #FIXME: Can pass split to only populate some of the lists
-    print(split_dict)
 
     #First, generate a skeleton workout based on the split. Then assign sets and reps. Then fill in the workouts.
     for i in split_dict:
         #generate_workout_skeleton will return a dictionary where the key is the day of the workout, the first value is COMPOUND or ACCESSORY, 
         #the second value is the muscle group, and the 3rd value is sets, 4th is reps.
         daily_workout_skeleton = generate_workout_skeleton(split_dict[i], int(fitness_goal), int(user_experience), int(time_per_workout))
-        print(f"SKELE: {daily_workout_skeleton}")
         daily_workout = select_exercises(daily_workout_skeleton)
-        print(f"DAILY WORKOUT: {daily_workout}")
         master_workout_list.append(daily_workout)
     
-    print(master_workout_list)
-    return master_workout_list
+    weekly_workout_dict = {i: lst for i, lst in enumerate(master_workout_list)}
+    
+    return weekly_workout_dict
 
+
+
+
+
+###------------------------------------TEST CASES-------------------------------------------------
 #Generate tests for the functions
 def test_get_split_selection():
     print("TESTING get_split_selection()")
@@ -195,6 +196,11 @@ def test_select_exercises():
     print(f"DAILY WORKOUT SKELETON: {daily_workout_skeleton}")
     daily_workout = select_exercises(daily_workout_skeleton)
     print(f"DAILY WORKOUT: {daily_workout}")
+def test_main():
+    print("TESTING main()")
+    print(f"MAIN RETURN: {main(4, 60, 2, 3)}")
 
+#-------------------OPTIONS TO RUN TEST CODE-----------------------------------------
 # test_get_split_selection()
-test_select_exercises()
+# test_select_exercises()
+# test_main()

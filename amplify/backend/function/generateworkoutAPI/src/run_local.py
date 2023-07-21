@@ -12,11 +12,6 @@ http = urllib3.PoolManager()
 app = Flask(__name__)
 CORS(app)
 
-# #Supabase Client init
-# SUPABASE_URL = 'https://nfxcfguxrnsmwfcyuoxf.supabase.co'
-# SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5meGNmZ3V4cm5zbXdmY3l1b3hmIiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODg3NTMyOTEsImV4cCI6MjAwNDMyOTI5MX0.-dfJ9jMpr4tNxciR0wiYow0SS0wUy2Ac_SekEKPwt2s'
-# supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-
 @app.route('/')
 def home():
     return 'Hello, Flask!'
@@ -43,18 +38,18 @@ def handle_api_request():
             "body": json.dumps("Please select a value for all options.")
         }
 
-    # Call your Python script or function to generate the output
     # Pass the option values as arguments and get the output
+    #Return is a dictionary for each workout day (numeric, zero index), then list of each workout for the day
+    #Each workout is another list cotaining 3 values - name of the exercise, # of sets, # of reps
+    #E.g., {0: [['exercisName#1', set, rep], ['exerciseName#2', set, rep],...}
     output = main(workout_days_per_week, time_per_workout, fitness_goal, user_experience)
  
-    #Convert list into dictionary
-    dict_output = {i: lst for i, lst in enumerate(output)}
     return {
     "statusCode": 200,
     "headers": {
         "Content-Type": "application/json"
     },
-    "body": json.dumps(dict_output)
+    "body": json.dumps(output)
     }
 
 
