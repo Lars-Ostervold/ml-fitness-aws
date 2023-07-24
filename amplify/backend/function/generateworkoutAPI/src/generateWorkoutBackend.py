@@ -4,12 +4,11 @@ from exercise_lists import *
 def get_split_selection(workout_days_per_week, user_experience):
     split_dict = {}
     if user_experience == 1: #Beginner
-        #Make a loop that iterates #of workout days and adds a 'FULL'
-        #for each
-        #FIXME: 'FULL' currently has no options to pull workouts. Maybe replace with:
-        #FIXME: chest, back, legs. But they should all be compound movements.
+        #This loop adds a full body workout, which is just chest, back, and legs.
         for i in range(1, workout_days_per_week + 1):
-            split_dict[i] = "FULL"
+            split_dict[i].append("CHEST")
+            split_dict[i].append("BACK")
+            split_dict[i].append("LEGS")
         return split_dict
 
     #Intermediate and Advanced splits (intermediate doesn't have option to pick >5 days)
@@ -35,7 +34,7 @@ def get_split_selection(workout_days_per_week, user_experience):
 #Given a split for a day, generate a 'skeleton' workout plan. The skeleton will say what muscle group, whether it's
 #a compound or accessory movement, and how many sets/reps to do.
 def generate_workout_skeleton(daily_split, fitness_goal, user_experience, time_per_workout):
-    #FIXME: If beginner, change to all compounds movements
+    
     daily_workout_skeleton = {}
 
     #Find the number of sets assuming 2.5 minutes per set
@@ -48,31 +47,36 @@ def generate_workout_skeleton(daily_split, fitness_goal, user_experience, time_p
     if remainder > 0:
         number_of_exercises += 1
 
-    #The first two exercises should always be compound movements. If more than 2, then
-    #make sure compound >= accessory
-    if number_of_exercises > 2:
-        if number_of_exercises % 2 == 0: #Check if even
-            number_of_compound_exercises = number_of_exercises // 2
-        else:
-            number_of_compound_exercises = number_of_exercises // 2 + 1
+    #TODO: Check if beginner logic works.
+    #If the user is a beginner, all movements are compound movements. Else, use the logic.
+    if user_experience == 1:
+        number_of_compound_exercises = len(daily_split)
     else:
-        number_of_compound_exercises = number_of_exercises
+        #The first two exercises should always be compound movements. If more than 2, then
+        #make sure compound >= accessory
+        if number_of_exercises > 2:
+            if number_of_exercises % 2 == 0: #Check if even
+                number_of_compound_exercises = number_of_exercises // 2
+            else:
+                number_of_compound_exercises = number_of_exercises // 2 + 1
+        else:
+            number_of_compound_exercises = number_of_exercises
 
-    #Now I know how many compound and accessory exercises to do. The compounds movements
-    #will be the first ones in the list. The rest will be accessory movements. So now 
-    #I need to figure out the muscle groups in the daily_split, note compound or accessory,
-    #and then assign a set/rep scheme.
+        #Now I know how many compound and accessory exercises to do. The compounds movements
+        #will be the first ones in the list. The rest will be accessory movements. So now 
+        #I need to figure out the muscle groups in the daily_split, note compound or accessory,
+        #and then assign a set/rep scheme.
 
-    #Let's do this by first assigning compound and accessory to the skeleton, then randomly
-    #choosing muscle groups.
-    for i in range(number_of_compound_exercises):
-        daily_workout_skeleton[i] = ["COMPOUND"]
-    for i in range(number_of_compound_exercises, number_of_exercises):
-        daily_workout_skeleton[i] = ["ACCESSORY"]
+        #Let's do this by first assigning compound and accessory to the skeleton, then randomly
+        #choosing muscle groups.
+        for i in range(number_of_compound_exercises):
+            daily_workout_skeleton[i] = ["COMPOUND"]
+        for i in range(number_of_compound_exercises, number_of_exercises):
+            daily_workout_skeleton[i] = ["ACCESSORY"]
 
     #Now we need to randomly choose muscle groups from daily_split, but we don't want to repeat muscle groups until all muscle groups have been used
     #But we need repeats if there are more exercises than muscle groups, so we need to check for that.
-    #FIXME: Need logic to make sure at least 1 exercises of every muscle group in this.
+    #FIXME: Need logic to make sure at least 1 exercises of every muscle group in this. Right now it just randomly chooses, so we could end up with 4 quad and 0 hamstring.
     #FIXME: Maybe can pop the first round, then random selection
     if number_of_exercises > len(daily_split):
         #We need repeats, so we can just randomly choose from daily_split
@@ -115,12 +119,25 @@ def generate_workout_skeleton(daily_split, fitness_goal, user_experience, time_p
 #Given a workout skeleton, select exercises from the exercise data.
 #Input is a dictionary with the following format: {key: [compound or accessory, muscle group, number of sets, number of reps]}
 #This function will return a list of exercises that match the muscle group and compound or accessory movement, along with the number of sets and reps.
-def select_exercises(daily_workout_skeleton):
-    #FIXME: User experience should be used to filter workouts.
-    #FIXME: This needs both a min and max level (advanced users should NEVER be doing kneeling push-ups)
+def select_exercises(daily_workout_skeleton, user_experience):
     complete_daily_workout = []
     possible_exercises = {}
 
+    #From the user_exeperience variable, set list of possible exercises
+    #TODO: Make sure this logic works to set the string for experience.
+    exp_str = ''
+    if user_experience == 1:
+        exp_str = 'BEGINNER'
+    elif user_experience == 2:
+        exp_str = 'INTERMEDIATE'
+    elif user_experience == 3:
+        exp_str = 'ADVANCED'
+    else:
+        print('ERROR: Could not match user_experience in select_exercises().')
+
+
+    #FIXME: Change max experience level to 'exclude_experience_level' in the db.
+    #TODO: Check if the experience filter works with this code.
     #Loop through the daily_workout_skeleton, find matching workouts in the exercise_db, then pick a random matching exercise
     for i in range(len(daily_workout_skeleton)):
         possible_exercises[i] = []
@@ -130,7 +147,9 @@ def select_exercises(daily_workout_skeleton):
             #the 'variation_group' value to possible_exercises. The comparison should be case insensitive.
             if ( #Code below avoids error with NULL values
                 daily_workout_skeleton[i][0].lower() in (exercise['type'].lower() if exercise['type'] else '') and
-                daily_workout_skeleton[i][1].lower() in (exercise['muscle_group'].lower() if exercise['muscle_group'] else '')
+                daily_workout_skeleton[i][1].lower() in (exercise['muscle_group'].lower() if exercise['muscle_group'] else '') and
+                exp_str.lower() in (exercise['minimum_experience_level'].lower() if exercise['minimum_experience_level'] else '') and
+                exp_str.lower() not in (exercise['maximum_experience_level'].lower() if exercise['maximum_experience_level'] else '')
             ):
                 possible_exercises[i].append(exercise['variation_group'])
 
@@ -160,7 +179,7 @@ def main(workout_days_per_week, time_per_workout, fitness_goal, user_experience)
         #generate_workout_skeleton will return a dictionary where the key is the day of the workout, the first value is COMPOUND or ACCESSORY, 
         #the second value is the muscle group, and the 3rd value is sets, 4th is reps.
         daily_workout_skeleton = generate_workout_skeleton(split_dict[i], int(fitness_goal), int(user_experience), int(time_per_workout))
-        daily_workout = select_exercises(daily_workout_skeleton)
+        daily_workout = select_exercises(daily_workout_skeleton, user_experience)
         master_workout_list.append(daily_workout)
     
     weekly_workout_dict = {i: lst for i, lst in enumerate(master_workout_list)}
@@ -203,4 +222,4 @@ def test_main():
 #-------------------OPTIONS TO RUN TEST CODE-----------------------------------------
 # test_get_split_selection()
 # test_select_exercises()
-# test_main()
+test_main()
