@@ -23,10 +23,10 @@ def handle_api_request():
     data = payload.get('payload')  # Get the JSON data from the request body
 
     # Extract the values from the data dictionary
-    workout_days_per_week = data.get('option1')
-    time_per_workout = data.get('option2')
-    fitness_goal = data.get('option3')
-    user_experience = data.get('option4')
+    workout_days_per_week = int(data.get('option1'))
+    time_per_workout = int(data.get('option2'))
+    fitness_goal = int(data.get('option3'))
+    user_experience = int(data.get('option4'))
 
      #Check if nothing was input
     if workout_days_per_week == '' or time_per_workout == '' or fitness_goal == '' or user_experience == '':
@@ -43,7 +43,17 @@ def handle_api_request():
     #Each workout is another list cotaining 3 values - name of the exercise, # of sets, # of reps
     #E.g., {0: [['exercisName#1', set, rep], ['exerciseName#2', set, rep],...}
     output = main(workout_days_per_week, time_per_workout, fitness_goal, user_experience)
- 
+
+    # Check if backend returned an error
+    if isinstance(output, str):
+        return {
+            "statusCode": 500,  # Use the appropriate status code for the error (e.g., 500 for Internal Server Error)
+            "headers": {
+                "Content-Type": "application/json"
+            },
+            "body": json.dumps(output)
+        }
+
     return {
     "statusCode": 200,
     "headers": {

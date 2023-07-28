@@ -89,10 +89,11 @@ function App() {
       //in the next arrow function (data in this case), which we can then access
       //body with data.body
       .then((data) => { 
+        console.log(data)
         const status_check = data.statusCode //Get status code from backend
         const data2 = JSON.parse(data.body)
         
-        if (status_check === 400) {//400 error is unselected options for now
+        if (status_check === 400 || status_check === 500) {//400 error is unselected options for now, 500 is internal server error
           setExerciseData(data.body.replace(/"/g, ''));//Returns error w/o double quotes
         } else{ 
           const exerciseArray = Object.entries(data2).map(([key, value]) => ({
