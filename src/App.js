@@ -40,77 +40,77 @@ function App() {
     };
 
     //----------------------LAMBDA--------------------------------------
-    // try { //Call the API using an amplify package and send 'payload'
-    //   const response = await API.post('generateworkoutAPI', '/workout', {
-    //     body: payload //If need to specify method, can send an 'httpMethod' header with payload
-    //   });
+    try { //Call the API using an amplify package and send 'payload'
+      const response = await API.post('generateworkoutAPI', '/workout', {
+        body: payload //If need to specify method, can send an 'httpMethod' header with payload
+      });
 
-    //   //Get status code from backend
-    //   const status_check = response.statusCode
+      //Get status code from backend
+      const status_check = response.statusCode
 
-    //   // The backend outputs a dictionary, but stores it as a string by default.
-    //   // The .parse function will convert it into an indexed list
-    //   const data = JSON.parse(response.body);
+      // The backend outputs a dictionary, but stores it as a string by default.
+      // The .parse function will convert it into an indexed list
+      const data = JSON.parse(response.body);
       
-    //   if (status_check === 400) {//400 error is unselected options for now
-    //     setExerciseData(response.body.replace(/"/g, ''));
-    //   } else{ 
-    //     //This command takes the indexed list (indexed by key for every value) and
-    //     //Converts into an array so that the .map in TableComponent will work.
-    //     const exerciseArray = Object.entries(data).map(([key, value]) => ({
-    //       id: key,
-    //       exercises: value,
-    //     }));
+      if (status_check === 400 || status_check === 500) {//400 error is unselected options for now, 500 is internal server error
+        setExerciseData(data.body.replace(/"/g, ''));//Returns error w/o double quotes
+      } else{ 
+        //This command takes the indexed list (indexed by key for every value) and
+        //Converts into an array so that the .map in TableComponent will work.
+        const exerciseArray = Object.entries(data).map(([key, value]) => ({
+          id: key,
+          exercises: value,
+        }));
     
         
-    //     //Set the data to the array to pass later
-    //     setExerciseData(exerciseArray);
-    //   }   
+        //Set the data to the array to pass later
+        setExerciseData(exerciseArray);
+      }   
 
-    // } catch (error) {
-    //   console.error(error);
-    // };
+    } catch (error) {
+      console.error(error);
+    };
 
     //--------------------------FLASK-----------------------------------------
-    // For calling the flask app directly (local dev)
-    const url = 'http://127.0.0.1:5000/workout';
-    const headers = {'Content-Type': 'application/json'};
-    const body = JSON.stringify({ payload });
-    fetch(url, {
-      method: 'POST',
-      headers: headers,
-      body: body
-    })
-      .then((response) => response.json()) 
+    // // For calling the flask app directly (local dev)
+    // const url = 'http://127.0.0.1:5000/workout';
+    // const headers = {'Content-Type': 'application/json'};
+    // const body = JSON.stringify({ payload });
+    // fetch(url, {
+    //   method: 'POST',
+    //   headers: headers,
+    //   body: body
+    // })
+    //   .then((response) => response.json()) 
       
-      // Parse the response as JSON
-      //With fetch, response.body can't be called directly, so we parse response
-      //with response.json() first, then reponse gets stored as whatever we call
-      //in the next arrow function (data in this case), which we can then access
-      //body with data.body
-      .then((data) => { 
-        console.log(data)
-        const status_check = data.statusCode //Get status code from backend
-        const data2 = JSON.parse(data.body)
+    //   // Parse the response as JSON
+    //   //With fetch, response.body can't be called directly, so we parse response
+    //   //with response.json() first, then reponse gets stored as whatever we call
+    //   //in the next arrow function (data in this case), which we can then access
+    //   //body with data.body
+    //   .then((data) => { 
+    //     console.log(data)
+    //     const status_check = data.statusCode //Get status code from backend
+    //     const data2 = JSON.parse(data.body)
         
-        if (status_check === 400 || status_check === 500) {//400 error is unselected options for now, 500 is internal server error
-          setExerciseData(data.body.replace(/"/g, ''));//Returns error w/o double quotes
-        } else{ 
-          const exerciseArray = Object.entries(data2).map(([key, value]) => ({
-            id: key,
-            exercises: value,
-          }));
+    //     if (status_check === 400 || status_check === 500) {//400 error is unselected options for now, 500 is internal server error
+    //       setExerciseData(data.body.replace(/"/g, ''));//Returns error w/o double quotes
+    //     } else{ 
+    //       const exerciseArray = Object.entries(data2).map(([key, value]) => ({
+    //         id: key,
+    //         exercises: value,
+    //       }));
   
       
-          setExerciseData(exerciseArray);
-        }
+    //       setExerciseData(exerciseArray);
+    //     }
 
 
-      })
-      .catch((error) => {
-        // Handle the error
-        console.error(error);
-      });
+    //   })
+    //   .catch((error) => {
+    //     // Handle the error
+    //     console.error(error);
+    //   });
 
   };
   
