@@ -11,10 +11,12 @@ function App() {
   const [timePerSessionOption, settimePerSessionOption] = useState('');
   const [fitnessGoalOption, setfitnessGoalOption] = useState('');
   const [userExperienceOption, setuserExperienceOption] = useState('');
+  const [addAbs, setAddAbs] = useState(false);
   const [exerciseData, setExerciseData] = useState([]);
   const [availableDaysPerWeekOptions, setAvailableDaysPerWeekOptions] = useState([
     "1", "2", "3", "4", "5", "6", "7"
   ]);
+  
 
   const handleUserExperienceChange = (e) => {
     const selectedValue = e.target.value;
@@ -33,10 +35,11 @@ function App() {
 
   const handleSubmit = async () => {
     const payload = {
-      option1: daysPerWeekOption,
-      option2: timePerSessionOption,
-      option3: fitnessGoalOption,
-      option4: userExperienceOption
+      daysPerWeek: daysPerWeekOption,
+      timePerSession: timePerSessionOption,
+      fitnessGoal: fitnessGoalOption,
+      userExperience: userExperienceOption,
+      abs_bool: addAbs
     };
 
     //----------------------LAMBDA--------------------------------------
@@ -73,7 +76,8 @@ function App() {
 
     //--------------------------FLASK-----------------------------------------
     // For calling the flask app directly (local dev)
-    const url = 'http://127.0.0.1:5000/workout';
+    // const url = 'http://127.0.0.1:5000/workout';
+    const url = 'https://k1j52p2h5j.execute-api.us-east-1.amazonaws.com/default';
     const headers = {'Content-Type': 'application/json'};
     const body = JSON.stringify({ payload });
     fetch(url, {
@@ -173,6 +177,17 @@ function App() {
             </Select>
             <Typography variant="h6">Fitness Goal</Typography>
           </div>
+          <div>
+          <label htmlFor="addAbsCheckbox">
+            <input
+              type="checkbox"
+              id="addAbsCheckbox"
+              checked={addAbs}
+              onChange={(e) => setAddAbs(e.target.checked)}
+            />
+            Add 5-10 minutes of abs?
+          </label>
+        </div>
         </Box>
         <Button variant="contained" onClick={handleSubmit}>
           Generate Workout

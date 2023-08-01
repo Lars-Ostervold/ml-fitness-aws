@@ -23,10 +23,11 @@ def handle_api_request():
     data = payload.get('payload')  # Get the JSON data from the request body
 
     # Extract the values from the data dictionary
-    workout_days_per_week = int(data.get('option1'))
-    time_per_workout = int(data.get('option2'))
-    fitness_goal = int(data.get('option3'))
-    user_experience = int(data.get('option4'))
+    workout_days_per_week = int(data.get('daysPerWeek'))
+    time_per_workout = int(data.get('timePerSession'))
+    fitness_goal = int(data.get('fitnessGoal'))
+    user_experience = int(data.get('userExperience'))
+    add_abs = bool(data.get('abs_bool'))
 
      #Check if nothing was input
     if workout_days_per_week == '' or time_per_workout == '' or fitness_goal == '' or user_experience == '':
@@ -42,7 +43,7 @@ def handle_api_request():
     #Return is a dictionary for each workout day (numeric, zero index), then list of each workout for the day
     #Each workout is another list cotaining 3 values - name of the exercise, # of sets, # of reps
     #E.g., {0: [['exercisName#1', set, rep], ['exerciseName#2', set, rep],...}
-    output = main(workout_days_per_week, time_per_workout, fitness_goal, user_experience)
+    output = main(workout_days_per_week, time_per_workout, fitness_goal, user_experience, add_abs)
 
     # Check if backend returned an error
     if isinstance(output, str):

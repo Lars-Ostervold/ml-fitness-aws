@@ -48,7 +48,6 @@ def generate_workout_skeleton(daily_split, fitness_goal, user_experience, time_p
     if remainder > 0:
         number_of_exercises += 1
 
-    #TODO: Check if beginner logic works.
     #If the user is a beginner, all movements are compound movements. Else, use the logic.
     if user_experience == 1:
         number_of_compound_exercises = len(daily_split)
@@ -177,8 +176,8 @@ def select_exercises(daily_workout_skeleton, user_experience):
     return complete_daily_workout
     
 
-def main(workout_days_per_week, time_per_workout, fitness_goal, user_experience):   
-    
+def main(workout_days_per_week, time_per_workout, fitness_goal, user_experience, add_abs):   
+    print(add_abs)
     #List of muscle groups:
         #Abs, back, biceps, chest, glutes, hamstrings, quads, shoulders, triceps, lower back
         #Accessories - calves, traps, abductors, adductors, forearms, neck?, rotator cuff
