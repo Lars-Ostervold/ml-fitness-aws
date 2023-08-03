@@ -4,6 +4,7 @@ import { API } from 'aws-amplify';
 import React, { useEffect } from 'react';
 import { useState } from 'react';
 import TableComponent from './TableComponent';
+import axios from 'axios';
 
 
 function App() {
@@ -41,6 +42,28 @@ function App() {
       userExperience: userExperienceOption,
       abs_bool: addAbs
     };
+    const axios = require('axios');
+    const headers = {
+      // 'Access-Control-Allow-Origin': 'http://localhost:3000', // Replace with your frontend application's origin
+      // 'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+      // 'Access-Control-Allow-Credentials': true,
+      'Content-Type': 'application/json'
+      };
+    let config = {
+      method: 'get',
+      maxBodyLength: Infinity,
+      url: 'https://zzswbozn7g.execute-api.us-east-1.amazonaws.com/production',
+      headers: headers,
+      // withCredentials: true,
+    };
+
+    axios.request(config)
+    .then((response) => {
+      console.log(JSON.stringify(response.data));
+    })
+    .catch((error) => {
+      console.log(error);
+    });
 
     //----------------------LAMBDA--------------------------------------
     // try { //Call the API using an amplify package and send 'payload'
@@ -77,44 +100,45 @@ function App() {
     //--------------------------FLASK-----------------------------------------
     // For calling the flask app directly (local dev)
     // const url = 'http://127.0.0.1:5000/workout';
-    const url = 'https://k1j52p2h5j.execute-api.us-east-1.amazonaws.com/default';
-    const headers = {'Content-Type': 'application/json'};
-    const body = JSON.stringify({ payload });
-    fetch(url, {
-      method: 'POST',
-      headers: headers,
-      body: body
-    })
-      .then((response) => response.json()) 
+    // const url = 'https://zzswbozn7g.execute-api.us-east-1.amazonaws.com/production/entries';
+    // const headers = {'Content-Type': 'application/json'};
+    // const body = JSON.stringify({ payload });
+    // fetch(url, {
+    //   method: 'POST',
+    //   headers: headers,
+    //   body: body
+    // })
+    //   .then((response) => response.json()) 
       
-      // Parse the response as JSON
-      //With fetch, response.body can't be called directly, so we parse response
-      //with response.json() first, then reponse gets stored as whatever we call
-      //in the next arrow function (data in this case), which we can then access
-      //body with data.body
-      .then((data) => { 
-        console.log(data)
-        const status_check = data.statusCode //Get status code from backend
-        const data2 = JSON.parse(data.body)
+    //   // Parse the response as JSON
+    //   //With fetch, response.body can't be called directly, so we parse response
+    //   //with response.json() first, then reponse gets stored as whatever we call
+    //   //in the next arrow function (data in this case), which we can then access
+    //   //body with data.body
+    //   .then((data) => { 
+    //     console.log(data)
+    //     const status_check = data.statusCode //Get status code from backend
+    //     const data2 = JSON.parse(data.body)
         
-        if (status_check === 400 || status_check === 500) {//400 error is unselected options for now, 500 is internal server error
-          setExerciseData(data.body.replace(/"/g, ''));//Returns error w/o double quotes
-        } else{ 
-          const exerciseArray = Object.entries(data2).map(([key, value]) => ({
-            id: key,
-            exercises: value,
-          }));
+    //     if (status_check === 400 || status_check === 500) {//400 error is unselected options for now, 500 is internal server error
+    //       setExerciseData(data.body.replace(/"/g, ''));//Returns error w/o double quotes
+    //     } else{ 
+    //       const exerciseArray = Object.entries(data2).map(([key, value]) => ({
+    //         id: key,
+    //         exercises: value,
+    //       }));
   
       
-          setExerciseData(exerciseArray);
-        }
+    //       setExerciseData(exerciseArray);
+    //     }
 
 
-      })
-      .catch((error) => {
-        // Handle the error
-        console.error(error);
-      });
+    //   })
+    //   .catch((error) => {
+    //     // Handle the error
+    //     console.error(error);
+    //   });
+
 
   };
   
