@@ -44,26 +44,45 @@ function App() {
     };
     const axios = require('axios');
     const headers = {
-      // 'Access-Control-Allow-Origin': 'http://localhost:3000', // Replace with your frontend application's origin
-      // 'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
-      // 'Access-Control-Allow-Credentials': true,
       'Content-Type': 'application/json'
       };
-    let config = {
-      method: 'get',
-      maxBodyLength: Infinity,
-      url: 'https://zzswbozn7g.execute-api.us-east-1.amazonaws.com/production',
-      headers: headers,
-      // withCredentials: true,
-    };
+    // let config = {
+    //   method: 'post',
+    //   maxBodyLength: Infinity,
+    //   url: 'https://zzswbozn7g.execute-api.us-east-1.amazonaws.com/production',
+    //   headers: headers,
+    //   data: payload,
+    // };
 
-    axios.request(config)
-    .then((response) => {
-      console.log(JSON.stringify(response.data));
+    //Make request to API Gateway
+    // axios.request(config)
+    
+  const url = 'https://zzswbozn7g.execute-api.us-east-1.amazonaws.com/production';
+
+  axios.post(url, payload, { headers })
+    .then(response => {
+      const data = response.data;
+      const status_check = data.statusCode;
+      const data2 = JSON.parse(data.body);
+      
+      if (status_check === 400 || status_check === 500) {
+        setExerciseData(data.body.replace(/"/g, ''));
+      } else { 
+        const exerciseArray = Object.entries(data2).map(([key, value]) => ({
+          id: key,
+          exercises: value,
+        }));
+
+        setExerciseData(exerciseArray);
+      }
     })
-    .catch((error) => {
-      console.log(error);
+    .catch(error => {
+      // Handle the error
+      console.error(error);
     });
+
+
+
 
     //----------------------LAMBDA--------------------------------------
     // try { //Call the API using an amplify package and send 'payload'
@@ -100,7 +119,6 @@ function App() {
     //--------------------------FLASK-----------------------------------------
     // For calling the flask app directly (local dev)
     // const url = 'http://127.0.0.1:5000/workout';
-    // const url = 'https://zzswbozn7g.execute-api.us-east-1.amazonaws.com/production/entries';
     // const headers = {'Content-Type': 'application/json'};
     // const body = JSON.stringify({ payload });
     // fetch(url, {

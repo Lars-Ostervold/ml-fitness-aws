@@ -1,22 +1,23 @@
 #Send w/ 'amplify push -y'
 import json
-import random
 from generateWorkoutBackend import main
 
 
 #This is the entrypoint for Lambda. If I want to define other httpMethods within this, I can pass
 #httpMethod from the frontendthen setup if statements here.
 def lambda_handler(event, context):
+    print(f'this is event: {event}')
+    print(f'this is context: {context}')
     response = handle_api_request(event)
     return response
 
 def handle_api_request(data):
-
+    print(f'this is data: {data}')
     # Extract the values from the data dictionary
-    workout_days_per_week = int(data.get('daysPerWeek'))
-    time_per_workout = int(data.get('timePerSession'))
-    fitness_goal = int(data.get('fitnessGoal'))
-    user_experience = int(data.get('userExperience'))
+    workout_days_per_week = data.get('daysPerWeek')
+    time_per_workout = data.get('timePerSession')
+    fitness_goal = data.get('fitnessGoal')
+    user_experience = data.get('userExperience')
     add_abs = bool(data.get('abs_bool'))
 
      #Check if nothing was input, return error code if blanks
@@ -33,7 +34,7 @@ def handle_api_request(data):
     #Return is a dictionary for each workout day (numeric, zero index), then list of each workout for the day
     #Each workout is another list cotaining 3 values - name of the exercise, # of sets, # of reps
     #E.g., {0: [['exercisName#1', set, rep], ['exerciseName#2', set, rep],...}
-    output = main(workout_days_per_week, time_per_workout, fitness_goal, user_experience, add_abs)
+    output = main(int(workout_days_per_week), int(time_per_workout), int(fitness_goal), int(user_experience), add_abs)
     
     # Check if backend returned an error
     if isinstance(output, str):
