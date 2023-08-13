@@ -1,21 +1,84 @@
-import React from 'react';
-import { Typography } from '@mui/material';
+import React, { useState } from 'react';
+import { Typography, Button } from '@mui/material';
+import Paper from '@mui/material/Paper';
+import './TableComponent.css';
 
 const TableComponent = ({ exerciseData }) => {
+  //This creates a reference to same memory location as exerciseData
+  //Therefore, when updatedExerciseData is updated, exerciseData is updated
+  //So we adjust this variable, and the table will update
+  const [updatedExerciseData, setUpdatedExerciseData] = useState([]);
+
+
+  //This function takes the name of the exercise, send it to the backend, and
+  //returns a new exercise
+  const handleRerollExercise = (exercise, dayIndex, exerciseIndex) => {
+    console.log(dayIndex)
+    console.log(exerciseIndex)
+    const payload = {
+      'exercise': exercise
+    };
+    const url = 'http://127.0.0.1:5000/reroll';
+    const headers = {'Content-Type': 'application/json'};
+    const body = JSON.stringify({ payload });
+    fetch(url, {
+      method: 'POST',
+      headers: headers,
+      body: body
+    })
+      .then((response) => response.json()) 
+      .then((data) => { 
+        const newExercise = JSON.parse(data.body)
+        console.log(newExercise)
+        const updatedExercises = [...exerciseData] //Copy of exerciseData
+        updatedExercises[dayIndex].exercises[exerciseIndex] = newExercise
+        setUpdatedExerciseData(updatedExercises)
+        
+      })
+      .catch((error) => {
+        // Handle the error
+        console.error(error);
+      });
+  };
+
   if (typeof exerciseData === 'string') { //Check if String, which means backend failed
     return <Typography variant="h3">{exerciseData}</Typography>;
   }
   
   return (
-    <div>
-      {exerciseData.map(({ id, exercises }) => (
-        <div key={id}>
+    <div className="container">
+      {exerciseData.map(({ id, exercises }, dayIndex) => (
+        <div key={id} className='table-container'>
           <Typography variant="h3">{getDayOfWeek(id)}</Typography>
-          <ul style={{ listStyle: 'none'}}>
-            {exercises.map((exercise, index) => (
-              <li key={index}>{exercise}</li>
-            ))}
-          </ul>
+          <Paper elevation={3} className="centered-paper" >
+            <table>
+              <thead>
+                <tr>
+                  <th>Exercise</th>
+                  <th>Sets</th>
+                  <th>Reps</th>
+                  <th>Reroll</th>
+                </tr>
+              </thead>
+              <tbody>
+                {exercises.map((exercise, exerciseIndex) => (
+                  <tr key={exerciseIndex}>
+                    <td>{exercise[0]}</td>
+                    <td>{exercise[1]}</td>
+                    <td>{exercise[2]}</td>
+                    <td>
+                      <Button variant="outlined" onClick={() => handleRerollExercise(exercise, dayIndex, exerciseIndex)}>
+                        Reroll
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Paper>
+          {/* <Button variant="outlined" onClick={() => handleRerollWorkout(exercises)}>
+            Reroll Workout
+          </Button> */}
         </div>
       ))}
     </div>

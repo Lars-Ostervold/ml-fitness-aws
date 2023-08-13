@@ -14,19 +14,66 @@
 }
 
 .App-header {
-  background-color: #282c34;
+  background-color: #0957f5;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 2vmin);
-  color: white;
+  color: rgb(219, 24, 24);
 }
 
 .App-link {
   color: #61dafb;
 }
+
+.selectBoxContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 2;
+  margin-bottom: 2;
+  justify-content: center;
+}
+
+.checkboxContainer {
+  display: flex;
+  align-items: center;
+  gap: 1;
+  margin-top: 1;
+  margin-bottom: 40px;
+  margin-left: 10px;
+  justify-content: center;
+}
+/* Style the checkbox input */
+.checkboxContainer input[type="checkbox"] {
+  width: 24px; /* Adjust the width */
+  height: 24px; /* Adjust the height */
+}
+/* Style the checkbox label text */
+.checkboxContainer label {
+  font-size: 24px; /* Adjust the font size */
+  align-items: center;
+  display: flex;
+}
+
+.tables-container {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start; /* Adjust alignment as needed */
+}
+
+.main-table {
+  flex: 1; /* Take up remaining width */
+}
+
+.abs-table {
+  flex: 1; /* Take up remaining width */
+}
+
+
+
 
 @keyframes App-logo-spin {
   from {

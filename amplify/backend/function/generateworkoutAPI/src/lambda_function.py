@@ -6,13 +6,10 @@ from generateWorkoutBackend import main
 #This is the entrypoint for Lambda. If I want to define other httpMethods within this, I can pass
 #httpMethod from the frontendthen setup if statements here.
 def lambda_handler(event, context):
-    print(f'this is event: {event}')
-    print(f'this is context: {context}')
     response = handle_api_request(event)
     return response
 
 def handle_api_request(data):
-    print(f'this is data: {data}')
     # Extract the values from the data dictionary
     workout_days_per_week = data.get('daysPerWeek')
     time_per_workout = data.get('timePerSession')

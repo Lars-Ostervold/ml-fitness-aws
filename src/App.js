@@ -4,6 +4,7 @@ import { API } from 'aws-amplify';
 import React, { useEffect } from 'react';
 import { useState } from 'react';
 import TableComponent from './TableComponent';
+import AbsTableComponent from './AbsTableComponent';
 import axios from 'axios';
 
 
@@ -17,8 +18,10 @@ function App() {
   const [availableDaysPerWeekOptions, setAvailableDaysPerWeekOptions] = useState([
     "1", "2", "3", "4", "5", "6", "7"
   ]);
-  
+  const [absExercises, setAbsExercises] = useState([]);
+  const [tempAbsExercises, setTempAbsExercises] = useState([]);
 
+  
   const handleUserExperienceChange = (e) => {
     const selectedValue = e.target.value;
     setuserExperienceOption(selectedValue);
@@ -35,6 +38,11 @@ function App() {
   
 
   const handleSubmit = async () => {
+    
+    //Clear the temporary list. It gets replenished each new run and then we set the absExercises to the temp list
+    setTempAbsExercises([]);
+
+
     const payload = {
       daysPerWeek: daysPerWeekOption,
       timePerSession: timePerSessionOption,
@@ -42,121 +50,90 @@ function App() {
       userExperience: userExperienceOption,
       abs_bool: addAbs
     };
-    const axios = require('axios');
-    const headers = {
-      'Content-Type': 'application/json'
-      };
-    // let config = {
-    //   method: 'post',
-    //   maxBodyLength: Infinity,
-    //   url: 'https://zzswbozn7g.execute-api.us-east-1.amazonaws.com/production',
-    //   headers: headers,
-    //   data: payload,
-    // };
-
-    //Make request to API Gateway
-    // axios.request(config)
     
-  const url = 'https://zzswbozn7g.execute-api.us-east-1.amazonaws.com/production';
-
-  axios.post(url, payload, { headers })
-    .then(response => {
-      const data = response.data;
-      const status_check = data.statusCode;
-      const data2 = JSON.parse(data.body);
-      
-      if (status_check === 400 || status_check === 500) {
-        setExerciseData(data.body.replace(/"/g, ''));
-      } else { 
-        const exerciseArray = Object.entries(data2).map(([key, value]) => ({
-          id: key,
-          exercises: value,
-        }));
-
-        setExerciseData(exerciseArray);
-      }
-    })
-    .catch(error => {
-      // Handle the error
-      console.error(error);
-    });
-
-
-
-
-    //----------------------LAMBDA--------------------------------------
-    // try { //Call the API using an amplify package and send 'payload'
-    //   const response = await API.post('generateworkoutAPI', '/workout', {
-    //     body: payload //If need to specify method, can send an 'httpMethod' header with payload
-    //   });
-
-    //   //Get status code from backend
-    //   const status_check = response.statusCode
-
-    //   // The backend outputs a dictionary, but stores it as a string by default.
-    //   // The .parse function will convert it into an indexed list
-    //   const data = JSON.parse(response.body);
-      
-    //   if (status_check === 400 || status_check === 500) {//400 error is unselected options for now, 500 is internal server error
-    //     setExerciseData(data.body.replace(/"/g, ''));//Returns error w/o double quotes
-    //   } else{ 
-    //     //This command takes the indexed list (indexed by key for every value) and
-    //     //Converts into an array so that the .map in TableComponent will work.
-    //     const exerciseArray = Object.entries(data).map(([key, value]) => ({
-    //       id: key,
-    //       exercises: value,
-    //     }));
     
-        
-    //     //Set the data to the array to pass later
-    //     setExerciseData(exerciseArray);
-    //   }   
+  // --------------------------AWS-----------------------------------------
+  // // Call the API using an axios package and send 'payload'
+  // const axios = require('axios');
+  // const headers = {
+  //   'Content-Type': 'application/json'
+  //   };
 
-    // } catch (error) {
-    //   console.error(error);
-    // };
+  // const url = 'https://zzswbozn7g.execute-api.us-east-1.amazonaws.com/production';
+
+  // axios.post(url, payload, { headers })
+  //   .then(response => {
+  //     const data = response.data;
+  //     const status_check = data.statusCode;
+  //     const data2 = JSON.parse(data.body);
+      
+  //     if (status_check === 400 || status_check === 500) {
+  //       setExerciseData(data.body.replace(/"/g, ''));
+  //     } else { 
+  //       const exerciseArray = Object.entries(data2).map(([key, value]) => ({
+  //         id: key,
+  //         exercises: value,
+  //       }));
+
+  //       setExerciseData(exerciseArray);
+  //     }
+  //   })
+  //   .catch(error => {
+  //     // Handle the error
+  //     console.error(error);
+  //   });
 
     //--------------------------FLASK-----------------------------------------
     // For calling the flask app directly (local dev)
-    // const url = 'http://127.0.0.1:5000/workout';
-    // const headers = {'Content-Type': 'application/json'};
-    // const body = JSON.stringify({ payload });
-    // fetch(url, {
-    //   method: 'POST',
-    //   headers: headers,
-    //   body: body
-    // })
-    //   .then((response) => response.json()) 
+    const url = 'http://127.0.0.1:5000/workout';
+    const headers = {'Content-Type': 'application/json'};
+    const body = JSON.stringify({ payload });
+    fetch(url, {
+      method: 'POST',
+      headers: headers,
+      body: body
+    })
+      .then((response) => response.json()) 
       
-    //   // Parse the response as JSON
-    //   //With fetch, response.body can't be called directly, so we parse response
-    //   //with response.json() first, then reponse gets stored as whatever we call
-    //   //in the next arrow function (data in this case), which we can then access
-    //   //body with data.body
-    //   .then((data) => { 
-    //     console.log(data)
-    //     const status_check = data.statusCode //Get status code from backend
-    //     const data2 = JSON.parse(data.body)
+      // Parse the response as JSON
+      //With fetch, response.body can't be called directly, so we parse response
+      //with response.json() first, then reponse gets stored as whatever we call
+      //in the next arrow function (data in this case), which we can then access
+      //body with data.body
+      .then((data) => { 
+        const status_check = data.statusCode //Get status code from backend
+        const data2 = JSON.parse(data.body)
         
-    //     if (status_check === 400 || status_check === 500) {//400 error is unselected options for now, 500 is internal server error
-    //       setExerciseData(data.body.replace(/"/g, ''));//Returns error w/o double quotes
-    //     } else{ 
-    //       const exerciseArray = Object.entries(data2).map(([key, value]) => ({
-    //         id: key,
-    //         exercises: value,
-    //       }));
-  
+        if (status_check === 400 || status_check === 500) {//400 error is unselected options for now, 500 is internal server error
+          setExerciseData(data.body.replace(/"/g, ''));//Returns error w/o double quotes
+        } else{ 
+          const exerciseArray = Object.entries(data2).map(([key, value]) => ({
+            id: key,
+            exercises: value,
+          }));
       
-    //       setExerciseData(exerciseArray);
-    //     }
+          setExerciseData(exerciseArray);
+          
+          //If abs is selected, get the last exercise of each day and store in absExercises
+          //Also, we need to remove these exercises from the exerciseArray so they don't get printed twice
+          if (addAbs === true){
+            for (var i = 0; i < exerciseArray.length; i++){
+              var day = exerciseArray[i].exercises
+              var lastExercise = day[day.length - 1]
+              tempAbsExercises.push(lastExercise)
+              day.pop()
+            }
+          }
+        }
+        setAbsExercises(tempAbsExercises)
 
 
-    //   })
-    //   .catch((error) => {
-    //     // Handle the error
-    //     console.error(error);
-    //   });
-
+      })
+      .catch((error) => {
+        // Handle the error
+        console.error(error);
+      });
+  //--------------------------END FLASK-----------------------------------------
 
   };
   
@@ -167,59 +144,60 @@ function App() {
         <Typography variant="h1">
           Hi! Select the settings below and click the 'Generate Workout' button to get started!
         </Typography>
-        <Box sx={{ display: 'flex', gap: 2, marginBottom: 2 }}>
-          <div>
-            <Select
-              name="userExperience"
-              value={userExperienceOption}
-              onChange={handleUserExperienceChange}
-            >
-              <MenuItem value="1">Beginner</MenuItem>
-              <MenuItem value="2">Intermediate</MenuItem>
-              <MenuItem value="3">Advanced</MenuItem>
-            </Select>
-            <Typography variant="h6">Gym Experience</Typography>
-          </div>
-          <div>
-            <Select
-              name="daysPerWeek"
-              value={daysPerWeekOption}
-              onChange={(e) => setdaysPerWeekOption(e.target.value)}
-            >
-              {availableDaysPerWeekOptions.map((option) => (
-                <MenuItem key={option} value={option}>
-                  {option}
-                </MenuItem>
-              ))}
-            </Select>
-            <Typography variant="h6">Days per Week</Typography>
-          </div>
-          <div>
-            <Select
-              name="timePerSession"
-              value={timePerSessionOption}
-              onChange={(e) => settimePerSessionOption(e.target.value)}
-            >
-              <MenuItem value="15">15</MenuItem>
-              <MenuItem value="30">30</MenuItem>
-              <MenuItem value="45">45</MenuItem>
-              <MenuItem value="60">60</MenuItem>
-            </Select>
-            <Typography variant="h6">Time per Session</Typography>
-          </div>
-          <div>
-            <Select
-              name="fitnessGoal"
-              value={fitnessGoalOption}
-              onChange={(e) => setfitnessGoalOption(e.target.value)}
-            >
-              <MenuItem value="1">Strength</MenuItem>
-              <MenuItem value="2">Body Building</MenuItem>
-              <MenuItem value="3">Lean</MenuItem>
-            </Select>
-            <Typography variant="h6">Fitness Goal</Typography>
-          </div>
-          <div>
+
+      <Box className='selectBoxContainer'>
+        <div>
+          <Select
+            name="userExperience"
+            value={userExperienceOption}
+            onChange={handleUserExperienceChange}
+          >
+            <MenuItem value="1">Beginner</MenuItem>
+            <MenuItem value="2">Intermediate</MenuItem>
+            <MenuItem value="3">Advanced</MenuItem>
+          </Select>
+          <Typography variant="h6">Gym Experience</Typography>
+        </div>
+        <div>
+          <Select
+            name="daysPerWeek"
+            value={daysPerWeekOption}
+            onChange={(e) => setdaysPerWeekOption(e.target.value)}
+          >
+            {availableDaysPerWeekOptions.map((option) => (
+              <MenuItem key={option} value={option}>
+                {option}
+              </MenuItem>
+            ))}
+          </Select>
+          <Typography variant="h6">Days per Week</Typography>
+        </div>
+        <div>
+          <Select
+            name="timePerSession"
+            value={timePerSessionOption}
+            onChange={(e) => settimePerSessionOption(e.target.value)}
+          >
+            <MenuItem value="15">15</MenuItem>
+            <MenuItem value="30">30</MenuItem>
+            <MenuItem value="45">45</MenuItem>
+            <MenuItem value="60">60</MenuItem>
+          </Select>
+          <Typography variant="h6">Time per Session</Typography>
+        </div>
+        <div>
+          <Select
+            name="fitnessGoal"
+            value={fitnessGoalOption}
+            onChange={(e) => setfitnessGoalOption(e.target.value)}
+          >
+            <MenuItem value="1">Strength</MenuItem>
+            <MenuItem value="2">Body Building</MenuItem>
+            <MenuItem value="3">Lean</MenuItem>
+          </Select>
+          <Typography variant="h6">Fitness Goal</Typography>
+        </div>
+        <div className='checkboxContainer'>
           <label htmlFor="addAbsCheckbox">
             <input
               type="checkbox"
@@ -230,11 +208,27 @@ function App() {
             Add 5-10 minutes of abs?
           </label>
         </div>
-        </Box>
+
+      </Box>
         <Button variant="contained" onClick={handleSubmit}>
           Generate Workout
         </Button>
-        <TableComponent exerciseData={exerciseData} />
+      </Box>
+      <Box sx={{ padding: 2 }}>
+        <div className="tables-container">
+          
+          {/* if addAbs, call AbsTableComponent, otherwise call exerciseData */}
+          {addAbs && absExercises.length > 0 ? (
+            <div className="abs-table">
+              <AbsTableComponent exerciseData = {exerciseData} absExercises={absExercises} />
+            </div>
+          ) : (
+            <div className="main-table">
+              <TableComponent exerciseData={exerciseData} />
+            </div>
+          )}
+        </div>
+        
       </Box>
     </div>
   );

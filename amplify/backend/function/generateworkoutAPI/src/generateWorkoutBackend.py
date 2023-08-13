@@ -34,7 +34,7 @@ def get_split_selection(workout_days_per_week, user_experience):
 
 #Given a split for a day, generate a 'skeleton' workout plan. The skeleton will say what muscle group, whether it's
 #a compound or accessory movement, and how many sets/reps to do.
-def generate_workout_skeleton(daily_split, fitness_goal, user_experience, time_per_workout):
+def generate_workout_skeleton(daily_split, fitness_goal, user_experience, time_per_workout, add_abs):
     
     daily_workout_skeleton = {}
 
@@ -62,13 +62,13 @@ def generate_workout_skeleton(daily_split, fitness_goal, user_experience, time_p
         else:
             number_of_compound_exercises = number_of_exercises
 
-        #Now I know how many compound and accessory exercises to do. The compounds movements
-        #will be the first ones in the list. The rest will be accessory movements. So now 
-        #I need to figure out the muscle groups in the daily_split, note compound or accessory,
-        #and then assign a set/rep scheme.
+    #Now I know how many compound and accessory exercises to do. The compounds movements
+    #will be the first ones in the list. The rest will be accessory movements. So now 
+    #I need to figure out the muscle groups in the daily_split, note compound or accessory,
+    #and then assign a set/rep scheme.
 
-        #Let's do this by first assigning compound and accessory to the skeleton, then randomly
-        #choosing muscle groups.
+    #Let's do this by first assigning compound and accessory to the skeleton, then randomly
+    #choosing muscle groups.
     for i in range(number_of_compound_exercises):
         daily_workout_skeleton[i] = ["COMPOUND"]
     for i in range(number_of_compound_exercises, number_of_exercises):
@@ -116,6 +116,12 @@ def generate_workout_skeleton(daily_split, fitness_goal, user_experience, time_p
     #Now randomly assign reps for each exercise
     for i in range(number_of_exercises):    
         daily_workout_skeleton[i].append(random.randint(rep_min,rep_max))
+    
+    #Now we need to add abs if the user wants to
+    if add_abs:
+        #Keep formatting the same and but "ABDOMINALS" in the 2nd position.
+        #3rd position doesn't matter, but 4th is 5-10 minutes. All abs are accessory in the db.
+        daily_workout_skeleton[number_of_exercises] = ["ACCESSORY", "ABDOMINALS", 3, random.randint(5,10)]
 
     return daily_workout_skeleton
 
@@ -139,7 +145,7 @@ def select_exercises(daily_workout_skeleton, user_experience):
         print('ERROR: Could not match user_experience in select_exercises().')
 
 
-    #TODO: Check if the experience filter works with this code.
+    
     #Loop through the daily_workout_skeleton, find matching workouts in the exercise_db, then pick a random matching exercise
     for i in range(len(daily_workout_skeleton)):
         possible_exercises[i] = []
@@ -163,21 +169,32 @@ def select_exercises(daily_workout_skeleton, user_experience):
     seen_exercises = set()
     for i in range(len(daily_workout_skeleton)):
         try:
-            exercise = random.choice(possible_exercises[i])
-            while exercise in seen_exercises:
+            #If abs, need to set a for loop that loops 4th index of daily_workout_skeleton[i] times
+            #FIXME: Hacky abs solution. 
+            if daily_workout_skeleton[i][1] == 'ABDOMINALS':
+                seen_abs = []
+                for j in range(int(daily_workout_skeleton[i][3]/2)):
+                    exercise = random.choice(possible_exercises[i])
+                    while exercise in seen_abs:
+                        exercise = random.choice(possible_exercises[i])
+                    seen_abs.append(exercise)
+                #Don't need to track sets/reps for abs, so just append the seen_exercises to the complete_daily_workout list when complete
+                complete_daily_workout.append(seen_abs)
+            else:
                 exercise = random.choice(possible_exercises[i])
-            seen_exercises.add(exercise) #Update seen exercise set
-            #Add the exercise to the complete_daily_workout list with the sets and reps (append only take 1 arg)
-            complete_daily_workout.append(exercise)
-            complete_daily_workout[i] = [complete_daily_workout[i], daily_workout_skeleton[i][2], daily_workout_skeleton[i][3]]
+                while exercise in seen_exercises:
+                    exercise = random.choice(possible_exercises[i])
+                seen_exercises.add(exercise) #Update seen exercise set
+                #Add the exercise to the complete_daily_workout list with the sets and reps (append only take 1 arg)
+                complete_daily_workout.append(exercise)
+                complete_daily_workout[i] = [complete_daily_workout[i], daily_workout_skeleton[i][2], daily_workout_skeleton[i][3]]
         except IndexError:
             error_message = f"Could not find {daily_workout_skeleton[i][0].lower()} {daily_workout_skeleton[i][1].lower()} exercises in our database. Please select a different workout split."
             return error_message
     return complete_daily_workout
     
 
-def main(workout_days_per_week, time_per_workout, fitness_goal, user_experience, add_abs):   
-    print(add_abs)
+def main(workout_days_per_week: int, time_per_workout: int, fitness_goal: int, user_experience: int, add_abs: bool):   
     #List of muscle groups:
         #Abs, back, biceps, chest, glutes, hamstrings, quads, shoulders, triceps, lower back
         #Accessories - calves, traps, abductors, adductors, forearms, neck?, rotator cuff
@@ -189,7 +206,7 @@ def main(workout_days_per_week, time_per_workout, fitness_goal, user_experience,
     for i in split_dict:
         #generate_workout_skeleton will return a dictionary where the key is the day of the workout, the first value is COMPOUND or ACCESSORY, 
         #the second value is the muscle group, and the 3rd value is sets, 4th is reps.
-        daily_workout_skeleton = generate_workout_skeleton(split_dict[i], int(fitness_goal), int(user_experience), int(time_per_workout))
+        daily_workout_skeleton = generate_workout_skeleton(split_dict[i], fitness_goal, user_experience, time_per_workout, add_abs)
         daily_workout = select_exercises(daily_workout_skeleton, int(user_experience))
         #See if daily_workout is a string, which means an error was returned
         if isinstance(daily_workout, str):
@@ -203,7 +220,7 @@ def main(workout_days_per_week, time_per_workout, fitness_goal, user_experience,
 
 
 
-
+# TODO: Move test cases to a separate file
 ###------------------------------------TEST CASES-------------------------------------------------
 #Generate tests for the functions
 def test_get_split_selection():
@@ -229,7 +246,8 @@ def test_generate_workout_skeleton():
     fitness_goal = 1
     user_experience = 1
     time_per_workout = 60
-    daily_workout_skeleton = generate_workout_skeleton(daily_split, fitness_goal, user_experience, time_per_workout)
+    add_abs = True
+    daily_workout_skeleton = generate_workout_skeleton(daily_split, fitness_goal, user_experience, time_per_workout, add_abs)
     print(daily_workout_skeleton)
     # Should return a dictionary where each key corresponds to a day (0 to n), and the values are lists of length 4
     # with the format ['COMPOUND' or 'ACCESSORY', muscle group, number of sets, number of reps]
@@ -237,7 +255,8 @@ def test_generate_workout_skeleton():
     fitness_goal = 2
     user_experience = 2
     time_per_workout = 75
-    daily_workout_skeleton = generate_workout_skeleton(daily_split, fitness_goal, user_experience, time_per_workout)
+    add_abs = True
+    daily_workout_skeleton = generate_workout_skeleton(daily_split, fitness_goal, user_experience, time_per_workout, add_abs)
     print(daily_workout_skeleton)
     # Should return a dictionary where each key corresponds to a day (0 to n), and the values are lists of length 4
     # with the format ['COMPOUND' or 'ACCESSORY', muscle group, number of sets, number of reps]
@@ -245,7 +264,8 @@ def test_generate_workout_skeleton():
     fitness_goal = 3
     user_experience = 3
     time_per_workout = 90
-    daily_workout_skeleton = generate_workout_skeleton(daily_split, fitness_goal, user_experience, time_per_workout)
+    add_abs = True
+    daily_workout_skeleton = generate_workout_skeleton(daily_split, fitness_goal, user_experience, time_per_workout, add_abs)
     print(daily_workout_skeleton)
     # Should return a dictionary where each key corresponds to a day (0 to n), and the values are lists of length 4
     # with the format ['COMPOUND' or 'ACCESSORY', muscle group, number of sets, number of reps]
@@ -253,7 +273,8 @@ def test_generate_workout_skeleton():
     fitness_goal = 1
     user_experience = 2
     time_per_workout = 55
-    daily_workout_skeleton = generate_workout_skeleton(daily_split, fitness_goal, user_experience, time_per_workout)
+    add_abs = True
+    daily_workout_skeleton = generate_workout_skeleton(daily_split, fitness_goal, user_experience, time_per_workout, add_abs)
     print(daily_workout_skeleton)
     # Should return a dictionary where each key corresponds to a day (0 to n), and the values are lists of length 4
     # with the format ['COMPOUND' or 'ACCESSORY', muscle group, number of sets, number of reps]
@@ -261,19 +282,20 @@ def test_generate_workout_skeleton():
     fitness_goal = 2
     user_experience = 3
     time_per_workout = 120
-    daily_workout_skeleton = generate_workout_skeleton(daily_split, fitness_goal, user_experience, time_per_workout)
+    add_abs = True
+    daily_workout_skeleton = generate_workout_skeleton(daily_split, fitness_goal, user_experience, time_per_workout, add_abs)
     # Should return a dictionary where each key corresponds to a day (0 to n), and the values are lists of length 4
     # with the format ['COMPOUND' or 'ACCESSORY', muscle group, number of sets, number of reps]
     print(daily_workout_skeleton)
 def test_select_exercises():
     print("TESTING select_exercises()")
-    daily_workout_skeleton = {0: ['COMPOUND', 'CHEST', 3, 5], 1: ['COMPOUND', 'BACK', 3, 5], 2: ['ACCESSORY', 'TRICEP', 3, 5], 3: ['ACCESSORY', 'BICEP', 3, 5]}
+    daily_workout_skeleton = {0: ['COMPOUND', 'CHEST', 3, 5], 1: ['COMPOUND', 'BACK', 3, 5], 2: ['ACCESSORY', 'TRICEP', 3, 5], 3: ['ACCESSORY', 'BICEP', 3, 5], 4: ['ACCESSORY', 'ABDOMINALS', 3, 10]}
     print(f"DAILY WORKOUT SKELETON: {daily_workout_skeleton}")
-    daily_workout = select_exercises(daily_workout_skeleton)
-    print(f"DAILY WORKOUT: {daily_workout}")
+    daily_workout = select_exercises(daily_workout_skeleton, 2)
+    print(f"DAILY WORKOUT: {daily_workout}") 
 def test_main():
     print("TESTING main()")
-    print(f"MAIN RETURN: {main(4, 60, 2, 2)}")
+    print(f"MAIN RETURN: {main(4, 60, 2, 2, True)}")
 
 #-------------------OPTIONS TO RUN TEST CODE-----------------------------------------
 # test_get_split_selection()
