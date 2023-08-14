@@ -13,28 +13,47 @@ const TableComponent = ({ exerciseData }) => {
   //This function takes the name of the exercise, send it to the backend, and
   //returns a new exercise
   const handleRerollExercise = (exercise, dayIndex, exerciseIndex) => {
-    console.log(dayIndex)
-    console.log(exerciseIndex)
     const payload = {
       'exercise': exercise
     };
-    const url = 'http://127.0.0.1:5000/reroll';
-    const headers = {'Content-Type': 'application/json'};
-    const body = JSON.stringify({ payload });
-    fetch(url, {
-      method: 'POST',
-      headers: headers,
-      body: body
-    })
-      .then((response) => response.json()) 
-      .then((data) => { 
+    const headers = {
+      'Content-Type': 'application/json'
+      };
+
+    // --------------------------AWS-----------------------------------------
+    const axios = require('axios');
+    const url = 'https://x4xecbx769.execute-api.us-east-1.amazonaws.com/default/reroll_workout';
+
+    axios.post(url, payload, { headers })
+      .then(response => {
+        const data = response.data;       
         const newExercise = JSON.parse(data.body)
-        console.log(newExercise)
         const updatedExercises = [...exerciseData] //Copy of exerciseData
         updatedExercises[dayIndex].exercises[exerciseIndex] = newExercise
         setUpdatedExerciseData(updatedExercises)
-        
       })
+
+    // --------------------------AWS-----------------------------------------
+
+
+    // --------------------------FLASK-----------------------------------------
+    // const url = 'http://127.0.0.1:5000/reroll';
+    // const headers = {'Content-Type': 'application/json'};
+    // const body = JSON.stringify({ payload });
+    // fetch(url, {
+    //   method: 'POST',
+    //   headers: headers,
+    //   body: body
+    // })
+    //   .then((response) => response.json()) 
+    //   .then((data) => { 
+    //     const newExercise = JSON.parse(data.body)
+    //     const updatedExercises = [...exerciseData] //Copy of exerciseData
+    //     updatedExercises[dayIndex].exercises[exerciseIndex] = newExercise
+    //     setUpdatedExerciseData(updatedExercises)
+        
+    //   })
+    //--------------------------FLASK-----------------------------------------
       .catch((error) => {
         // Handle the error
         console.error(error);
