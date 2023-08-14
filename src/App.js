@@ -54,68 +54,29 @@ function App() {
     
   // --------------------------AWS-----------------------------------------
   // // Call the API using an axios package and send 'payload'
-  // const axios = require('axios');
-  // const headers = {
-  //   'Content-Type': 'application/json'
-  //   };
+  const axios = require('axios');
+  const headers = {
+    'Content-Type': 'application/json'
+    };
 
-  // const url = 'https://zzswbozn7g.execute-api.us-east-1.amazonaws.com/production';
+  const url = 'https://zzswbozn7g.execute-api.us-east-1.amazonaws.com/production';
 
-  // axios.post(url, payload, { headers })
-  //   .then(response => {
-  //     const data = response.data;
-  //     const status_check = data.statusCode;
-  //     const data2 = JSON.parse(data.body);
+  axios.post(url, payload, { headers })
+    .then(response => {
+      const data = response.data;
+      const status_check = data.statusCode;
+      const data2 = JSON.parse(data.body);
       
-  //     if (status_check === 400 || status_check === 500) {
-  //       setExerciseData(data.body.replace(/"/g, ''));
-  //     } else { 
-  //       const exerciseArray = Object.entries(data2).map(([key, value]) => ({
-  //         id: key,
-  //         exercises: value,
-  //       }));
+      if (status_check === 400 || status_check === 500) {
+        setExerciseData(data.body.replace(/"/g, ''));
+      } else { 
+        const exerciseArray = Object.entries(data2).map(([key, value]) => ({
+          id: key,
+          exercises: value,
+        }));
 
-  //       setExerciseData(exerciseArray);
-  //     }
-  //   })
-  //   .catch(error => {
-  //     // Handle the error
-  //     console.error(error);
-  //   });
-
-    //--------------------------FLASK-----------------------------------------
-    // For calling the flask app directly (local dev)
-    const url = 'http://127.0.0.1:5000/workout';
-    const headers = {'Content-Type': 'application/json'};
-    const body = JSON.stringify({ payload });
-    fetch(url, {
-      method: 'POST',
-      headers: headers,
-      body: body
-    })
-      .then((response) => response.json()) 
+        setExerciseData(exerciseArray);
       
-      // Parse the response as JSON
-      //With fetch, response.body can't be called directly, so we parse response
-      //with response.json() first, then reponse gets stored as whatever we call
-      //in the next arrow function (data in this case), which we can then access
-      //body with data.body
-      .then((data) => { 
-        const status_check = data.statusCode //Get status code from backend
-        const data2 = JSON.parse(data.body)
-        
-        if (status_check === 400 || status_check === 500) {//400 error is unselected options for now, 500 is internal server error
-          setExerciseData(data.body.replace(/"/g, ''));//Returns error w/o double quotes
-        } else{ 
-          const exerciseArray = Object.entries(data2).map(([key, value]) => ({
-            id: key,
-            exercises: value,
-          }));
-      
-          setExerciseData(exerciseArray);
-          
-          //If abs is selected, get the last exercise of each day and store in absExercises
-          //Also, we need to remove these exercises from the exerciseArray so they don't get printed twice
           if (addAbs === true){
             for (var i = 0; i < exerciseArray.length; i++){
               var day = exerciseArray[i].exercises
@@ -126,14 +87,60 @@ function App() {
           }
         }
         setAbsExercises(tempAbsExercises)
+      
+    })
 
+    //--------------------------FLASK-----------------------------------------
+    // For calling the flask app directly (local dev)
+    // const url = 'http://127.0.0.1:5000/workout';
+    // const headers = {'Content-Type': 'application/json'};
+    // const body = JSON.stringify({ payload });
+    // fetch(url, {
+    //   method: 'POST',
+    //   headers: headers,
+    //   body: body
+    // })
+    //   .then((response) => response.json()) 
+      
+    //   // Parse the response as JSON
+    //   //With fetch, response.body can't be called directly, so we parse response
+    //   //with response.json() first, then reponse gets stored as whatever we call
+    //   //in the next arrow function (data in this case), which we can then access
+    //   //body with data.body
+    //   .then((data) => { 
+    //     const status_check = data.statusCode //Get status code from backend
+    //     const data2 = JSON.parse(data.body)
+        
+    //     if (status_check === 400 || status_check === 500) {//400 error is unselected options for now, 500 is internal server error
+    //       setExerciseData(data.body.replace(/"/g, ''));//Returns error w/o double quotes
+    //     } else{ 
+    //       const exerciseArray = Object.entries(data2).map(([key, value]) => ({
+    //         id: key,
+    //         exercises: value,
+    //       }));
+      
+    //       setExerciseData(exerciseArray);
 
-      })
+    //       //If abs is selected, get the last exercise of each day and store in absExercises
+    //       //Also, we need to remove these exercises from the exerciseArray so they don't get printed twice
+    //       if (addAbs === true){
+    //         for (var i = 0; i < exerciseArray.length; i++){
+    //           var day = exerciseArray[i].exercises
+    //           var lastExercise = day[day.length - 1]
+    //           tempAbsExercises.push(lastExercise)
+    //           day.pop()
+    //         }
+    //       }
+    //     }
+    //     setAbsExercises(tempAbsExercises)
+    //--------------------------END FLASK-----------------------------------------
+
+    //   })
       .catch((error) => {
         // Handle the error
         console.error(error);
       });
-  //--------------------------END FLASK-----------------------------------------
+  
 
   };
   
