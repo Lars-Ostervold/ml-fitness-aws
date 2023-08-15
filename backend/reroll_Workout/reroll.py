@@ -1,5 +1,5 @@
 import random
-from exercise_lists import *
+from .exercise_lists import *
 
 #This function takes in the name of an exercise and returns a new exercise of the same type
 #It will have to take the exercise_name, find it in the list of exercises, generate a new list
