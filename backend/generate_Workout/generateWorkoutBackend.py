@@ -1,5 +1,5 @@
 import random
-from exercise_lists import *
+from .exercise_lists import *
 
 def get_split_selection(workout_days_per_week, user_experience):
     split_dict = {}

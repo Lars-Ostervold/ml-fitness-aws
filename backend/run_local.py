@@ -3,8 +3,8 @@ import json
 from flask_cors import CORS
 from flask import Flask, jsonify, request
 import urllib3
-from generateWorkoutBackend import main
-from reroll import main as reroll
+from generate_Workout.generateWorkoutBackend import main
+from reroll_Workout.reroll import main as reroll
 
 
 # BASE_ROUTE = "/workout"

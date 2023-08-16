@@ -1,6 +1,5 @@
 import './App.css';
 import { Box, Button, Typography, Select, MenuItem } from '@mui/material'
-import { API } from 'aws-amplify';
 import React, { useEffect } from 'react';
 import { useState } from 'react';
 import TableComponent from './TableComponent';
