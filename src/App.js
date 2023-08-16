@@ -7,6 +7,7 @@ import TableComponent from './TableComponent';
 import AbsTableComponent from './AbsTableComponent';
 import axios from 'axios';
 
+console.log('have good day')
 
 function App() {
   const [daysPerWeekOption, setdaysPerWeekOption] = useState('');
